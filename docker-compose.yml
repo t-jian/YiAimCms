@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+   web:
+        image: 'api.ztan:latest'
+        restart: 'always'
+        build: .
+        ports:
+           - '6002:80'
+        volumes:
+            - '/var/www/api.ztan.net/staticfiles:/app/staticfiles'
+            - '/var/www/api.ztan.net/logs:/app/logs'
+
+ 
