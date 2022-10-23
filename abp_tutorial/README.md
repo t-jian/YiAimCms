@@ -243,6 +243,8 @@ export default service
 ```
 5. 解决了基础请求配置的问题，接下来正式进入登录相关
 在src/api 建立indentity文件夹(主要用来存放用户身份相关的请求)，新建user.js,里面的接口都是对应swagger里面
+
+src/api/indentity/user/js
 ```
 import request from '@/utils/abpRequest'
 import { transformAbpListQuery } from '@/utils/abp'
@@ -411,13 +413,259 @@ router.beforeEach(async(to, from, next) => {
 })
 
 ```
-到此，已经能正常进入首页
+到此，已经能正常进入首页的。
 ![2.1.4](../abp_tutorial/images/2.1.4.png)
 
-最后，本章到此已经结束，不然篇幅就太长了。本章我们完成了与vue-element-admin的接口对接，完成了登录、应用程序基本初始化功能。
-下章将要完成的是 菜单权限，注销及其用户头像等信息的补全。
+但好像菜单都隐藏了，问题不大下章继续解决，本章到此已经结束，不然篇幅就太长了。本章我们完成了与vue-element-admin的接口对接，完成了登录、应用程序基本初始化功能。
+下章将要完成的是菜单权限，注销及其用户头像等信息的补全。
+
+## 3）用户信息&菜单权限管理&vue项目瘦身
+上章完成了与vue-element-admin的接口对接，获取token登录的基本功能，本章将继续完成用户信息&菜单权限管理相关功能
+
+> 上章说过vue-element-admin的菜单权限是使用用户角色来控制的，而这里我们不需要通过role控制，通过/api/abp/application-configuration接口的auth.grantedPolicies字段，与对应的菜单路由绑定，进而实现对权限控制。
+1. 在src/store/modules/user.js 添加设置roles的方法
+```
+  setRoles({ commit }, roles) {
+    commit("SET_ROLES", roles);
+  },
+```
+2. 在src/store/modules/permission.js修改内容如下：
+
+```
+import { asyncRoutes, constantRoutes } from '@/router'
+
+function hasPermission(roles, route) {
+  if (route.meta && route.meta.policy) {
+    return roles[route.meta.policy]
+  } else {
+    return true
+  }
+}
+
+export function filterAsyncRoutes(routes, roles) {
+  const res = []
+  routes.forEach(route => {
+    const tmp = { ...route }
+    if (hasPermission(roles, tmp)) {
+      if (tmp.children) {
+        tmp.children = filterAsyncRoutes(tmp.children, roles)
+      }
+      if (route.meta && route.meta.policy === '') {
+        if (tmp.children.length > 0) {
+          res.push(tmp)
+        }
+      } else {
+        res.push(tmp)
+      }
+    }
+  })
+
+  return res
+}
+const state = {
+  routes: [],
+  addRoutes: []
+}
+const mutations = {
+  SET_ROUTES: (state, routes) => {
+    state.addRoutes = routes
+    state.routes = constantRoutes.concat(routes)
+  }
+}
+const actions = {
+  generateRoutes({ commit }, roles) {
+    return new Promise(resolve => {
+      const accessedRoutes = filterAsyncRoutes(asyncRoutes, roles)
+      commit('SET_ROUTES', accessedRoutes)
+      resolve(accessedRoutes)
+    })
+  }
+}
+export default {
+  namespaced: true,
+  state,
+  mutations,
+  actions
+}
+
+```
+3. 在src/permission.js修改内容如下：
+
+```
+import router from './router'
+import store from './store'
+import { Message } from 'element-ui'
+import NProgress from 'nprogress' // progress bar
+import 'nprogress/nprogress.css' // progress bar style
+import getPageTitle from '@/utils/get-page-title'
+NProgress.configure({ showSpinner: false }) // NProgress Configuration
+const whiteList = ['/login', '/auth-redirect'] // no redirect whitelist
+router.beforeEach(async(to, from, next) => {
+  NProgress.start()
+  document.title = getPageTitle(to.meta.title)
+  //在请求之前获取abp应用配置信息
+  let abpConfig = store.getters.abpConfig
+  if (!abpConfig) {
+    abpConfig = await store.dispatch('app/applicationConfiguration')
+  }
+  if (abpConfig.currentUser.isAuthenticated) {
+    if (to.path === '/login') {
+      next({ path: '/' })
+      NProgress.done() 
+    } else {
+      if (store.getters.name&&store.getters.token) {
+        //登录直接放行
+        next()
+      } else {
+        try {
+          //token&&name不存在则重新获取用户信息
+         await store.dispatch('user/getInfo')
+         await store.dispatch('user/setRoles', abpConfig.currentUser.roles)
+         const accessRoutes = await store.dispatch('permission/generateRoutes',abpConfig.auth.grantedPolicies)
+         router.addRoutes(accessRoutes)
+         next({ ...to, replace: true })
+        } catch (error) {
+          await store.dispatch('user/resetToken')
+          Message.error(error || 'Has Error')
+          next(`/login?redirect=${to.path}`)
+          NProgress.done()
+        }
+      }
+    }
+  } else {
+    if (whiteList.indexOf(to.path) !== -1) {
+      next()
+    } else {
+      next(`/login?redirect=${to.path}`)
+      NProgress.done()
+    }
+  }
+})
+
+router.afterEach(() => {
+  NProgress.done()
+})
+
+```
+4. 同时要确保user/getInfo 接口能正常获取到用户信息,刷新运行项目就能正常看到菜单
+![菜单](../abp_tutorial/images/3.1.1.png)
+
+目前的全部菜单并没有被权限控制，需要给路由改造一下
+在 src/router/index.js meta里面添加字段 policy: 'AbpIdentity.Roles',<font color="red">AbpIdentity.Roles</font> 为 abppermissiongrants表中的一项，现在将这个删除。(图为已删除结果)
+![abppermissiongrants](../abp_tutorial/images/3.1.2.png)
+
+```
+export const asyncRoutes = [
+  {
+    path: '/permission',
+    component: Layout,
+    redirect: '/permission/page',
+    alwaysShow: true, 
+    name: 'Permission',
+    meta: {
+      title: 'permission',
+      icon: 'lock',
+      policy: 'AbpIdentity.Roles'
+    },
+    }
+  ]
+```
+> ps:别拿constantRoutes里面的路由测试，这里的路由是公开的不受权限控制
+
+修改完成后重启服务端，刷新ui界面就可以看到"权限测试页"被移除了。
+![权限测试页](../abp_tutorial/images/3.1.3.png)
+
+权限绑定菜单到这里就差不多了，接下来是将vue项目瘦身，框架自带的很多东西都不是我们需要的。
+
+。 删除vue里面多余的路由与view
+>删除小技巧:根据路由找到相对应的文件夹后删除view，如果某些组件没有用到也可以移除
+
+删除完成后得到的效果
+![删除vue多余的效果2](../abp_tutorial/images/3.1.5.png)
+![删除vue多余的效果](../abp_tutorial/images/3.1.4.png)
+
+最后添加ABP自带的身份认证模块
+
+在src/touter/modules 添加 identity.js、tenant.js
 
 
+```
+// identity.js
+import Layout from "@/layout";
+
+const identityRouter = {
+  path: "/identity",
+  component: Layout,
+  redirect: "noRedirect",
+  name: "Identity",
+  meta: {
+    title: "identity",
+    icon: "user"
+  },
+  children: [
+    {
+      path: "roles",
+      component: () => import("@/views/identity/roles"),
+      name: "Roles",
+      meta: { title: "roles", policy: "AbpTenantManagement.Tenants" }
+    },
+    {
+      path: "users",
+      component: () => import("@/views/identity/users"),
+      name: "Users",
+      meta: { title: "users", policy: "AbpTenantManagement.Tenants" }
+    }
+  ]
+};
+export default identityRouter;
+//tenant.js
+import Layout from "@/layout";
+
+const tenantRouter = {
+  path: "/tenant",
+  component: Layout,
+  redirect: "/tenant/tenants",
+  alwaysShow: true,
+  name: "Tenant",
+  meta: {
+    title: "tenant",
+    icon: "tree"
+  },
+  children: [
+    {
+      path: "tenants",
+      component: () => import("@/views/tenant/index"),
+      name: "Tenants",
+      meta: { title: "tenants", policy: "AbpTenantManagement.Tenants" }
+    }
+  ]
+};
+export default tenantRouter;
+
+```
+
+在src/touter/index.js 里面添加
+
+```
+import identityRouter from "./modules/identity";
+import tenantRouter from "./modules/tenant";
+
+export const asyncRoutes = [
+  identityRouter,
+  tenantRouter,
+  { path: '*', redirect: '/404', hidden: true }
+]
+
+```
+在src/views 里面新建identity、tenant文件夹加及相关view
+
+最终展示效果
+
+![最终展示效果2](../abp_tutorial/images/3.1.7.png)
+
+![最终展示效果1](../abp_tutorial/images/3.1.8.png)
+
+本章到此结束，下章将来继续完成 UI端的权限处理，ABP与vue的国际化，用户基本信息的扩展
 
 
 
