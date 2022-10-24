@@ -262,4 +262,3 @@ src/YiAim.Cms.Blazor.Server/Logs/*
 src/YiAim.Cms.Blazor.Server.Tiered/Logs/*
 
 # Use abp install-libs to restore.
-**/wwwroot/libs/*
