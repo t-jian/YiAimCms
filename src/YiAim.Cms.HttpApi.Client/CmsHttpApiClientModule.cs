@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Account;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
@@ -19,7 +19,7 @@ namespace YiAim.Cms;
     typeof(AbpFeatureManagementHttpApiClientModule),
     typeof(AbpSettingManagementHttpApiClientModule)
 )]
-public class CmsHttpApiClientModule : AbpModule
+    public class CmsHttpApiClientModule : AbpModule
 {
     public const string RemoteServiceName = "Default";
 

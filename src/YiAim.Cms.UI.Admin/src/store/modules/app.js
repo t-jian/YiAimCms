@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie'
-import { getLanguage } from '@/lang/index'
+import { getLanguage,setLocale } from '@/lang/index'
 import { applicationConfiguration, tenantsByName } from '@/api/abp'
 const state = {
   sidebar: {
@@ -64,9 +64,7 @@ const actions = {
       applicationConfiguration()
         .then(response => {
           commit('SET_ABPCONFIG', response)
-          const language = response.localization.currentCulture.cultureName
-          const values = response.localization.values
-          //setLocale(language, values)
+          setLocale(response.localization.currentCulture.cultureName, response.localization.values)
           resolve(response)
         })
         .catch(error => {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Uow;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
@@ -27,7 +27,7 @@ namespace YiAim.Cms.EntityFrameworkCore;
     typeof(AbpTenantManagementEntityFrameworkCoreModule),
     typeof(AbpFeatureManagementEntityFrameworkCoreModule)
     )]
-public class CmsEntityFrameworkCoreModule : AbpModule
+    public class CmsEntityFrameworkCoreModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
@@ -38,15 +38,12 @@ public class CmsEntityFrameworkCoreModule : AbpModule
     {
         context.Services.AddAbpDbContext<CmsDbContext>(options =>
         {
-                /* Remove "includeAllEntities: true" to create
-                 * default repositories only for aggregate roots */
             options.AddDefaultRepositories(includeAllEntities: true);
         });
 
         Configure<AbpDbContextOptions>(options =>
         {
-                /* The main point to change your DBMS.
-                 * See also CmsMigrationsDbContextFactory for EF Core tooling. */
+             
             options.UseMySQL();
         });
 

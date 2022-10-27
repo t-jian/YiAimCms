@@ -57,7 +57,7 @@ namespace YiAim.Cms.Web;
     typeof(AbpAspNetCoreSerilogModule),
     typeof(AbpSwashbuckleModule)
     )]
-public class CmsWebModule : AbpModule
+    public class CmsWebModule : AbpModule
 {
     private const string DefaultCorsPolicyName = "Default";
     public override void PreConfigureServices(ServiceConfigurationContext context)
@@ -102,17 +102,6 @@ public class CmsWebModule : AbpModule
     }
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
-        context.Services.AddAuthentication()
-            .AddIdentityServerAuthentication(options =>
-            {
-                options.Authority = configuration["AuthServer:Authority"];
-                options.RequireHttpsMetadata = false;
-                options.ApiName = "HelloAbp";
-                options.JwtBackChannelHandler = new HttpClientHandler()
-                {
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                };
-            });
         context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
     }
     private void ConfigureCors(ServiceConfigurationContext context, IConfiguration configuration)

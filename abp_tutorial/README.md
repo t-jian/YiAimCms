@@ -5,14 +5,15 @@ abp 6.0
 vue2 
 
 ## 1) 初识ABP vNext与项目初建
-##### ABP vNext 简介
+
+###### ABP vNext 简介
 ABP vNext（以下简称ABP）的前身是asp.net boilerplate，更多信息请看官网介绍。ABP官网：https://www.abp.io/
 
 废话不多说，开始个人网站搭建之旅
 
 > 默认已经有了.net core的开发环境，没有就去下载 https://dotnet.microsoft.com/download
 
-###### 一、创建项目
+######  创建项目
 创建项目有很多种方式：
 
 1. 纯手撸，使用vs手动创建新项目(熟手、巧手特区)
@@ -23,7 +24,7 @@ ABP vNext（以下简称ABP）的前身是asp.net boilerplate，更多信息请�
 > 更多使用方式参考 https://docs.abp.io/zh-Hans/abp/latest/CLI
 ``` 
 dotnet tool install -g Volo.Abp.Cli 
-abp new Acme.BookStore
+abp new xxxx
 ```
 为了省事，项目就直接使用2方式创建
 >项目类型选择应用程序,UI框架选择->MVC,数据库提供者选择->Entity Framework Core, 数据库选择->MySQL,移动端不需要，小项目也不需要将Web、http API分离，所以也不需要分层
@@ -33,11 +34,11 @@ abp new Acme.BookStore
 vs2022打开时目录结构
 ![项目目录结构](../abp_tutorial/images/1.2.png)
 
-###### 二、让项目跑起来
+###### 让项目跑起来
 
 1. 先更改 YiAim.Cms.Web 里面的  appsettings.json 里面的数据库连接串，同时也需要更改  YiAim.Cms.DbMigrator 里面的  appsettings.json 里面的数据库连接串
 `"Default": "server=xxx;port=3306;user=xx;password=xxx;database=xx;charset=utf8;SslMode=none;Allow User Variables=True" `
-2. 将YiAim.Cms.DbMigrator 设为启动项目，运行该项目进行数据库初始操作（这步很重要）
+2. 将YiAim.Cms.DbMigrator 设为启动项目，控制台选择 YiAim.Cms.EntityFrameworkCore，运行该项目进行数据库初始操作（这步很重要）
 ![数据初始化](../abp_tutorial/images/1.4.png)
 完成后，数据库中已经创建了表和初始化了系统自动的一些数据
 ![数据初始化2](../abp_tutorial/images/1.5.png)
@@ -48,6 +49,9 @@ vs2022打开时目录结构
 ![swagger api](../abp_tutorial/images/1.8.png)
 
 到此abp项目已经能正常运行，本章目标结束。
+如果ui端报错需要下章依赖，执行,具体请教百度
+```abp install-libs``` 
+
 下章将进行与vue element admin 后台框架的对接，将完成登录、注册等功能。
 
 
@@ -665,7 +669,355 @@ export const asyncRoutes = [
 
 ![最终展示效果1](../abp_tutorial/images/3.1.8.png)
 
-本章到此结束，下章将来继续完成 UI端的权限处理，ABP与vue的国际化，用户基本信息的扩展
+本章到此结束，下章将来继续完成 UI端的权限处理，ABP与vue的国际化
+
+## 4) abp+vue国际化与UI权限管理逻辑处理
+
+> abp与vue国际化形式，这里将采用服务端返回国际化语言的方式实现
+
+先来看一下abp自带的页面，可以看到abp是已经自带了国际化的功能，我们只需要把它搬到vue项目里面就可以。
+
+![abp国际化](../abp_tutorial/images/4.1.1.gif)
+
+用到的后端接口 `api/abp/application-configuration`
+
+![applicationconfiguration](../abp_tutorial/images/4.1.2.png)
+
+###### 1.下面就来具体实现vue的国际化
+application-configuration接口里面提的localization.languages属性只有2个语言了，然后只需要把这个数据绑定到界面上就好了。
+
+- 修改src/lang/index.js同时删除除index.js 以外的js文件
+```
+import Vue from 'vue'
+import VueI18n from 'vue-i18n'
+import Cookies from 'js-cookie'
+import elementEnLocale from 'element-ui/lib/locale/lang/en' // element-ui lang
+import elementZhLocale from 'element-ui/lib/locale/lang/zh-CN'// element-ui lang
+
+Vue.use(VueI18n)
+
+const messages = {
+  en: {
+    ...elementEnLocale
+  },
+  'zh-CN': {
+    ...elementZhLocale
+  }
+}
+
+export function setLocale(language, values) {
+  i18n.mergeLocaleMessage(language, values)
+  i18n.locale = language
+}
+export function getLanguage() {
+  const chooseLanguage = Cookies.get('language')
+  if (chooseLanguage) return chooseLanguage
+  const language = (
+    navigator.language || navigator.browserLanguage
+  ).toLowerCase()
+  const locales = Object.keys(messages)
+  for (const locale of locales) {
+    if (language.indexOf(locale) > -1) {
+      return locale
+    }
+  }
+  return 'zh-Hans'
+}
+const i18n = new VueI18n({
+  locale: getLanguage(),
+  messages
+})
+
+export default i18n
+
+```
+- 在 src/store/modules/app.js 的 applicationConfiguration 里面添加
+```
+import { getLanguage,setLocale } from '@/lang/index' 
+//根据接口返回设置本地语言
+//applicationConfiguration 
+setLocale(response.localization.currentCulture.cultureName, response.localization.values)
+```
+- 语言切换用的是一个公共组件 src\components\LangSelect\index.vue
+```
+<template>
+  <el-dropdown trigger="click" class="international" @command="handleSetLanguage">
+    <div>
+      <svg-icon class-name="international-icon" icon-class="language" />
+    </div>
+    <el-dropdown-menu slot="dropdown">
+      <el-dropdown-item
+        v-for="item in languages"
+        :key="item.cultureName"
+        :disabled="language === item.cultureName"
+        :command="item.cultureName"
+      >
+        {{ item.displayName }}
+      </el-dropdown-item>
+    </el-dropdown-menu>
+  </el-dropdown>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      languages: this.$store.getters.abpConfig.localization.languages
+    }
+  },
+  computed: {
+    language() {
+      return this.$store.getters.language
+    }
+  },
+  methods: {
+    handleSetLanguage(lang) {
+      this.$store.dispatch('app/setLanguage', lang)
+      this.$store.dispatch('app/applicationConfiguration').then(() => {
+        this.$message({
+          message: 'Switch Language Success',
+          type: 'success'
+        })
+      })
+    }
+  }
+}
+</script>
+```
+
+- 修改后端的配置的语言包文本（src\YiAim.Cms.Domain.Shared\Localization\Cms\zh-Hans.json、zhn-Hans.json）
+- 最后在UI界面上对应的文本使用vue-i18n的$t()方法渲染就好了 如：
+
+```
+//html
+<h3 class="title">{{$t('Cms["Login"]')}} </h3>
+//js 里面
+this.$i18n.t("AbpAccount['ThisFieldIsRequired.']")
+```
+
+过程可参考【xhznl】大神的文章 https://www.cnblogs.com/xhznl/p/13554571.html
+
+由于项目小且国际化有点繁琐的，要配置的比较多，后面就统一使用中文。
+将不再配置i18n对应的字典，有需要的小伙伴可进行配置。
+
+###### 2.UI权限管理逻辑处理
+> 身份认证管理模块后端接口都是abp集成的，现阶段就是vue项目里面的接口对接。由于前端部分代码过多，这里就不一一展示，内容参考【xhznl】大神的文章 https://www.cnblogs.com/xhznl/p/13566246.html
+或者直接拉起源码
+
+api接口请求全部放在 `src\api\idenity`里面
+
+view放在 `src\views\identity`与 `src\views\tenat`里面
+
+本章到此结束。感谢【xhznl】大神的文章教程，下章将进行内容系统的表，基础接口的搭建。
+
+## 5)内容系统表的搭建
+
+> 本来是想使用abp的CMS模块但发现里面的东西有点多也不太符合我现有网站的数据结构，有兴趣的小伙伴可下载abp源码看看，里面有很多值得借鉴的地方
+
+![abp源码](../abp_tutorial/images/5.1.2png.png)![abp cms源码](../abp_tutorial/images/5.1.1.png)
+
+下面列一下个人网站博客框架一些常用的功能(可借鉴abp cms ~)：
+- 内容
+- 分类
+- 标签
+
+- 动态页面
+- 轮播图（广告轮播）
+- 导航菜单（可有可无）
+- 评论 (不需要，后面有空单独做个评论系统的功能)
+
+1. 在 YiAim.Cms.Domain项目新建 Blogs文件夹用于存放所有cms相关的实体表
+
+```
+internal interface ITaxis
+    {
+        /// <summary>
+        /// 排序
+        /// </summary>
+        int Taxis {get;set; }
+    }
+    public  class TaxisEntity : ITaxis
+    {
+        /// <summary>
+        /// 排序
+        /// </summary>
+        public virtual int Taxis { get; set; } = 0;
+    }
+```
+- Blog(内容)
+```
+public class Blog : FullAuditedAggregateRoot<int>, ITaxis
+{
+    public Blog()
+    {
+        TagMaps = new HashSet<TagMap>();
+    }
+
+    [NotNull]
+    [MaxLength(254)]
+    public string Title { get; set; }
+    [MaxLength(100)]
+    public string Author { get; set; }
+    /// <summary>
+    /// 是否为热点或推荐
+    /// </summary>
+    public bool IsHot { get; set; } = false;
+    /// <summary>
+    /// 来源
+    /// </summary>
+    [MaxLength(150)]
+    public string Source { get; set; }
+
+    /// <summary>
+    /// 外部链接地址
+    /// </summary>
+    public string LinkUrl { get; set; }
+
+    /// <summary>
+    /// 文章缩略图
+    /// </summary>
+    public string ThumbImg { get; set; }
+
+    /// <summary>
+    /// 审核状态
+    /// </summary>
+    [NotNull]
+    public BlogPostStatus Status { get; set; }
+
+    /// <summary>
+    /// 文章摘要
+    /// </summary>
+    [MaxLength(254)]
+    public string Digest { get; set; }
+    /// <summary>
+    /// 文章内容 已进行编码 ，js 端使用 encodeURIComponent解码
+    /// 后端采用System.Web.HttpUtility.UrlDecode(s)解码 / UrlEncoder.Default.Encode(s) 编码
+    /// </summary>
+    public string Content { get; set; }
+    /// <summary>
+    /// 发布时间
+    /// </summary>
+    public long PublishDate { get; set; }
+    public int Taxis { get; set; } = 0;
+
+    public int? CategoryId { get; set; }
+    public virtual ICollection<TagMap> TagMaps { get; set; }
+
+}
+```
+- Category（分类）这里允许文章里面分类为空
+```
+public class Category : FullAuditedAggregateRoot<int>, ITaxis
+{
+    public Category()
+    {
+        Blogs = new HashSet<Blog>();
+    }
+    [NotNull]
+    [MaxLength(150)]
+    public string Title { get; set; }
+    public int Taxis { get; set; } = 0;
+    public ICollection<Blog> Blogs { get; set; }
+}
+
+```
+- Tag 标签
+```
+public class Tag : FullAuditedAggregateRoot<int>, ITaxis
+{
+    public Tag()
+    {
+        TagMaps=new HashSet<TagMap>();
+    }
+    [NotNull]
+    [MaxLength(150)]
+    public string Name { get; set; }
+    public int Taxis { get; set; } = 0;
+    public ICollection<TagMap> TagMaps { get; set; }
+}
+```
+-  TagMap 标签与文章关联表
+```
+  /// <summary>
+    /// 标签与文章关联表
+    /// </summary>
+    public class TagMap : Entity
+    {
+        [NotNull]
+        public int TagId { get; set; }
+        [NotNull]
+        public int BlogId { get; set; }
+       
+        public override object[] GetKeys()
+        {
+            return new object[] { TagId, TagId };
+        }
+    }
+```
+2. 在YiAim.Cms.EntityFrameworkCore\CmsDbContext 里面的 OnModelCreating 方法配置
+
+```
+ builder.Entity<Blog>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "blog", CmsConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+       
+        builder.Entity<Category>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "category", CmsConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+        builder.Entity<Tag>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "tag", CmsConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<TagMap>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "tag_map", CmsConsts.DbSchema);
+            b.HasKey(e => new { e.BlogId, e.TagId });
+        });
+```
+3. 进行数据迁移,生成表如下
+![数据迁移成功](../abp_tutorial/images/5.1.3.png)
+
+4. 定义仓储接口以及现实api接口
+ 
+ 在YiAim.Cms.Domain\Blogs文件夹里面新建IRepositories文件夹用于存放blog相关的自定义仓储
+ 如：
+ ```
+public interface IBlogRepository : IBasicRepository<Blog, int>
+{
+    Task<List<Blog>> GetListAsync(
+        string filter = null,
+        string sorting = null,
+        int maxResultCount = int.MaxValue,
+        int skipCount = 0,
+        CancellationToken cancellationToken = default
+        );
+
+    Task<long> GetCountAsync(
+        string filter = null,
+        CancellationToken cancellationToken = default
+        );
+
+
+    Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+}
+ ```
+
+
+
+//对接github、gitee、qq完成多个第三方账号进行登录【多账号统一登录】
+
+
+
+
+
+
+
 
 
 

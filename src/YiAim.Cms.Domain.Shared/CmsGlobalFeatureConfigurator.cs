@@ -18,5 +18,6 @@ public static class CmsGlobalFeatureConfigurator
                  * https://docs.abp.io/en/abp/latest/Global-Features
                  */
         });
+     
     }
 }

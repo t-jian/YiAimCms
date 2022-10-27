@@ -4,7 +4,7 @@
 
       <div class="title-container">
         <h3 class="title">
-          {{ $t('login.title') }}
+          {{$t('Cms["Login"]')}}
         </h3>
         <lang-select class="set-language" />
       </div>
@@ -16,7 +16,7 @@
         <el-input
           ref="username"
           v-model="loginForm.username"
-          :placeholder="$t('login.username')"
+          :placeholder="$t('AbpAccount[\'UserNameOrEmailAddress\']')"
           name="username"
           type="text"
           tabindex="1"
@@ -34,7 +34,7 @@
             ref="password"
             v-model="loginForm.password"
             :type="passwordType"
-            :placeholder="$t('login.password')"
+            :placeholder="$t('AbpAccount[\'Password\']')"
             name="password"
             tabindex="2"
             autocomplete="on"
@@ -49,34 +49,9 @@
       </el-tooltip>
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">
-        {{ $t('login.logIn') }}
+        {{ $t("AbpAccount['Login']") }}
       </el-button>
-
-      <div style="position:relative">
-        <div class="tips">
-          <span>{{ $t('login.username') }} : admin</span>
-          <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
-        </div>
-        <div class="tips">
-          <span style="margin-right:18px;">
-            {{ $t('login.username') }} : editor
-          </span>
-          <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
-        </div>
-
-        <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
-          {{ $t('login.thirdparty') }}
-        </el-button>
-      </div>
     </el-form>
-
-    <el-dialog :title="$t('login.thirdparty')" :visible.sync="showDialog">
-      {{ $t('login.thirdpartyTips') }}
-      <br>
-      <br>
-      <br>
-      <social-sign />
-    </el-dialog>
   </div>
 </template>
 
@@ -109,8 +84,8 @@ export default {
         password: '111111'
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        username: [{ required: true, trigger: 'blur', message: this.$i18n.t("AbpAccount['ThisFieldIsRequired.']")}],
+        password: [{ required: true, trigger: 'blur', essage: this.$i18n.t("AbpAccount['ThisFieldIsRequired.']"), }]
       },
       passwordType: 'password',
       capsTooltip: false,

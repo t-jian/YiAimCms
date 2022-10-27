@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
+using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
@@ -12,6 +13,7 @@ using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
+using YiAim.Cms.Blogs;
 
 namespace YiAim.Cms.EntityFrameworkCore;
 
@@ -23,20 +25,8 @@ public class CmsDbContext :
     IIdentityDbContext,
     ITenantManagementDbContext
 {
-    /* Add DbSet properties for your Aggregate Roots / Entities here. */
 
     #region Entities from the modules
-
-    /* Notice: We only implemented IIdentityDbContext and ITenantManagementDbContext
-     * and replaced them for this DbContext. This allows you to perform JOIN
-     * queries for the entities of these modules over the repositories easily. You
-     * typically don't need that for other modules. But, if you need, you can
-     * implement the DbContext interface of the needed module and use ReplaceDbContext
-     * attribute just like IIdentityDbContext and ITenantManagementDbContext.
-     *
-     * More info: Replacing a DbContext of a module ensures that the related module
-     * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
-     */
 
     //Identity
     public DbSet<IdentityUser> Users { get; set; }
@@ -52,6 +42,14 @@ public class CmsDbContext :
 
     #endregion
 
+    #region blogs
+
+    public DbSet<Blog> Blogs { get; set; }
+    public DbSet<Category> Categorys { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<TagMap> TagMaps { get; set; }
+    #endregion
+
     public CmsDbContext(DbContextOptions<CmsDbContext> options)
         : base(options)
     {
@@ -61,9 +59,6 @@ public class CmsDbContext :
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
-        /* Include modules to your migration db context */
-
         builder.ConfigurePermissionManagement();
         builder.ConfigureSettingManagement();
         builder.ConfigureBackgroundJobs();
@@ -73,13 +68,27 @@ public class CmsDbContext :
         builder.ConfigureFeatureManagement();
         builder.ConfigureTenantManagement();
 
-        /* Configure your own tables/entities inside here */
+        builder.Entity<Blog>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "blog", CmsConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+       
+        builder.Entity<Category>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "category", CmsConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+        builder.Entity<Tag>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "tag", CmsConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
 
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(CmsConsts.DbTablePrefix + "YourEntities", CmsConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
+        builder.Entity<TagMap>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "tag_map", CmsConsts.DbSchema);
+            b.HasKey(e => new { e.BlogId, e.TagId });
+        });
     }
 }

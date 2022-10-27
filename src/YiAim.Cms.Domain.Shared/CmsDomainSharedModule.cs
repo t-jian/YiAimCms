@@ -1,4 +1,4 @@
-﻿using YiAim.Cms.Localization;
+using YiAim.Cms.Localization;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.FeatureManagement;
@@ -25,7 +25,7 @@ namespace YiAim.Cms;
     typeof(AbpSettingManagementDomainSharedModule),
     typeof(AbpTenantManagementDomainSharedModule)    
     )]
-public class CmsDomainSharedModule : AbpModule
+    public class CmsDomainSharedModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {

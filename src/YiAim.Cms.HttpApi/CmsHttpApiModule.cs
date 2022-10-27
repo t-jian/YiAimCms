@@ -1,4 +1,4 @@
-﻿using Localization.Resources.AbpUi;
+using Localization.Resources.AbpUi;
 using YiAim.Cms.Localization;
 using Volo.Abp.Account;
 using Volo.Abp.FeatureManagement;
@@ -20,7 +20,7 @@ namespace YiAim.Cms;
     typeof(AbpFeatureManagementHttpApiModule),
     typeof(AbpSettingManagementHttpApiModule)
     )]
-public class CmsHttpApiModule : AbpModule
+    public class CmsHttpApiModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
