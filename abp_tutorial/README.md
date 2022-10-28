@@ -1179,7 +1179,473 @@ abp的数据访问
 > 现来看一下目前我个人网站实现的管理后台的效果，现这个管理后台也差不多是这个逻辑
 ![管理后台的效果](../abp_tutorial/images/6.1.gif)
 
+- 在utils里面新建grobalMsgTip.js,用于处理页面中出现提示，同时在main.js 中挂载在vue上
 
+robalMsgTip.js
+
+```
+import { Message, MessageBox, Loading } from 'element-ui'
+
+const MessageTip = {
+    success: function name(msg) {
+        Message.success({
+            message: msg,
+            duration: 2000
+        });
+    },
+    error(msg) {
+        Message.error({
+            message: msg,
+            duration: 2000
+        });
+    },
+    info(msg) {
+        Message.info({
+            message: msg,
+            duration: 2000
+        });
+    },
+    warning(msg) {
+        Message.warning({
+            message: msg,
+            duration: 2000
+        });
+    },
+    delete(succesFn, cancelFn) {
+        MessageBox.confirm('此操作将永久删除, 是否继续?', '系统提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }).then(() => {
+            if (typeof succesFn == "function") {
+                succesFn();
+            }
+        }).catch(() => {
+            if (typeof cancelFn == "function") {
+                cancelFn();
+            }
+        });
+    },
+    loading() {
+        return Loading.service({
+            lock: true,
+            text: "Loading",
+            spinner: "el-icon-loading",
+            background: "rgba(0, 0, 0, 0.56)",
+        })
+    }
+}
+export default {
+    MessageTip
+}
+
+//main.js
+import grobalMsgTip from '@/utils/grobalMsgTip'
+Vue.prototype.$mtip = grobalMsgTip.MessageTip
+```
+
+- 实现category(分类)
+
+先来看一下后台提供接口,这里直接使用apb提供的CrudAppService【CRUD应用服务】，一个配置完成CRUD的操作，有兴趣可了解一下https://docs.abp.io/zh-Hans/abp/6.0/Application-Services
+
+![category接口](../abp_tutorial/images/6.2.png)
+
+abp都后端代码实现,有一点需要注意的是：我这里有些验证是直接抛出了`UserFriendlyException`异常，UI端做了统一的拦截这样就不需要单独每个请求接口做处理
+
+ps： Dto 不要忘记了在`CmsApplicationAutoMapperProfile`配置映射关系,Dto太多这里就不贴出来了
+
+CategoryService.cs
+```
+public interface ICategoryService {
+
+    Task<List<CategoryDto>> GetAll();
+}
+
+public class CategoryService : CrudAppService<Category, CategoryDto, int, PagingInput, CreateCategoryInput, EditCategoryInput>, ICategoryService
+{
+    public CategoryService(IRepository<Category, int> repository) : base(repository)
+    {
+    }
+    public override async Task<CategoryDto> CreateAsync(CreateCategoryInput input)
+    {
+        if (await Repository.AnyAsync(n => n.Title.Equals(input.Title)))
+        {
+            throw new UserFriendlyException("分类名称已经存在");
+        }
+        return await base.CreateAsync(input);
+    }
+
+    [HttpGet("/api/app/Category/GetAll")]
+    
+    public async Task<List<CategoryDto>> GetAll()
+    {
+        var items = await Repository.GetListAsync();
+        return ObjectMapper.Map<List<Category>, List<CategoryDto>>(items);
+    }
+}
+
+
+
+```
+CmsApplicationAutoMapperProfile.cs
+```
+public class CmsApplicationAutoMapperProfile : Profile
+{
+    public CmsApplicationAutoMapperProfile()
+    {
+        CreateMap<Blog, BaseBlogDto>();
+        CreateMap<Blog, BlogDetailDto>();
+        CreateMap<Blog, PageBlogDto>();
+
+        CreateMap<Category, BaseCategoryDto>();
+        CreateMap<Category, CategoryDto>();
+
+        CreateMap<CreateCategoryInput, Category>().ReverseMap();
+        CreateMap<EditCategoryInput, Category>();
+    }
+}
+```
+
+UI端，在src\api\blogs 新建category.js,里面写上我们需要的接口
+
+category.js
+
+```
+import request from '@/utils/abpRequest'
+
+import { transformAbpListQuery } from '@/utils/abp'
+
+export function getCategory(query) {
+  return request({
+    url: '/api/app/category',
+    method: 'get',
+    params: transformAbpListQuery(query)
+  })
+}
+export function getAllCategory(){
+    return request({
+        url: '/api/app/Category/GetAll',
+        method: 'get',
+        params:null
+      })
+}
+
+export function getCategoryById(id) {
+  return request({
+    url: `/api/app/category/${id}`,
+    method: 'get'
+  })
+}
+
+export function createCategory(data) {
+  return request({
+    url: '/api/app/Category',
+    method: 'post',
+    data
+  })
+}
+
+export function updateCategory(payload) {
+  return request({
+    url: `/api/app/category/${payload.id}`,
+    method: 'put',
+    data: payload
+  })
+}
+
+export function deleteCategory(id) {
+  return request({
+    url: `/api/app/category/${id}`,
+    method: 'delete'
+  })
+}
+
+```
+UI端，在src\views\cms\category 新建index.vue,为了能界面效果应先配置菜单，在src\router\modules 新建cms.js 配置完内容管理的菜单路由（小技巧：没有新建对应的vue页面的时候可以全部指向一个存在的页面）
+
+cms.js (我这里直接贴已经完成的)
+```
+import Layout from "@/layout";
+
+const identityRouter = 
+    {
+        path: '/cms',
+        component: Layout,
+        redirect: '/cms/blog',
+        name: '内容管理',
+        meta: { title: '内容管理', icon: 'el-icon-s-help' },
+        children: [{
+                path: 'blog',
+                name: '文章',
+                component: () =>
+                    import ('@/views/cms/blog/index'),
+                meta: { title: '文章', icon: 'table', activeMenu: '/cms/blog' }
+            },
+            {
+                path: 'wxNews',
+                name: '公众号文章',
+                component: () =>
+                    import ('@/views/cms/blog/wxNews'),
+                meta: { title: '公众号文章', icon: 'table', activeMenu: '/cms/blog' },
+                hidden: true
+            },
+            {
+                path: 'create',
+                component: () =>
+                    import ('@/views/cms/blog/create'),
+                name: 'CreateArticle',
+                meta: { title: 'Create Article', icon: 'edit', activeMenu: '/cms/blog' },
+                hidden: true
+            },
+            {
+                path: 'edit/:id(\\d+)',
+                component: () =>
+                    import ('@/views/cms/blog/edit'),
+                name: 'EditArticle',
+                meta: { title: 'editArticle', noCache: true, activeMenu: '/cms/blog' },
+                hidden: true
+            },
+            {
+                path: 'tree',
+                name: '分类',
+                component: () =>
+                    import ('@/views/cms/category/index'),
+                meta: { title: '分类', icon: 'tree' }
+            },
+            {
+                path: 'tags',
+                name: '标签',
+                meta: { title: '标签', icon: 'tree' },
+                component: () =>
+                    import ('@/views/cms/tag/index'),
+                hidden: true
+            }
+        ]
+    };
+export default identityRouter;
+```
+
+index.vue
+```
+<template>
+  <div class="app-container">
+    <div class="filter-container">
+      <el-button
+        type="primary"
+        size="small"
+        plain
+        @click="showDialog('add')"
+        icon="el-icon-edit"
+        >新增分类</el-button
+      >
+    </div>
+    <el-table
+      v-loading="listLoading"
+      :data="columnList"
+      element-loading-text="Loading"
+      border
+      fit
+      highlight-current-row
+    >
+      <el-table-column align="center" label="ID" width="95">
+        <template slot-scope="scope">
+          {{ scope.row.id }}
+        </template>
+      </el-table-column>
+      <el-table-column label="名称">
+        <template slot-scope="scope">
+          {{ scope.row.title }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        align="center"
+        width="230"
+        class-name="small-padding fixed-width"
+      >
+        <template slot-scope="{ row }">
+          <el-button
+            type="primary"
+            icon="el-icon-edit"
+            size="mini"
+            @click="updateShowDialog('update', row.id)"
+          >
+          </el-button>
+          <el-button
+            v-if="row.status != 'deleted'"
+            icon="el-icon-delete"
+            size="mini"
+            type="danger"
+            @click="deleteColumn(row.id)"
+          >
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFormVisible"
+      width="400px"
+    >
+      <el-form
+        ref="dataForm"
+        :rules="rules"
+        :model="temp"
+        label-position="left"
+        label-width="70px"
+        style="width: 100%;margin: 0 auto"
+      >
+        <el-form-item label="名称" prop="title">
+          <el-input v-model="temp.title" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button
+          type="primary"
+          size="small"
+          @click="dialogStatus === 'add' ? createData() : updateData()"
+        >
+          确认
+        </el-button>
+        <el-button size="small" @click="dialogFormVisible = false">
+          取消
+        </el-button>
+      </div>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import {
+  createCategory,
+  deleteCategory,
+  updateCategory,
+  getAllCategory
+} from "@/api/blogs/category";
+export default {
+  filters: {
+    statusFilter(status) {
+      const statusMap = {
+        published: "success",
+        draft: "gray",
+        deleted: "danger",
+      };
+      return statusMap[status];
+    },
+  },
+  data() {
+    return {
+      listLoading: true,
+      dialogFormVisible: false,
+      temp: {
+        title: "",
+        taxis:0
+      },
+      textMap: {
+        update: "编辑",
+        add: "添加",
+      },
+      dialogStatus: "",
+      rules: {
+        title: [
+          {
+            required: true,
+            message: "分类名称不能为空",
+            trigger: "blur",
+          },
+        ],
+      },
+      columnList: [],
+      value: "",
+    };
+  },
+  created() {
+    this.getColumnList();
+  },
+  methods: {
+    getColumnList() {
+      this.listLoading = true;
+      getAllCategory()
+        .then((res) => {
+          this.columnList = res;
+          this.listLoading = false;
+        })
+        .catch(() => {
+          this.listLoading = false;
+        });
+    },
+    updateShowDialog(type, id) {
+      this.temp = this.columnList.filter((n) => n.id == id)[0];
+      this.showDialog(type);
+    },
+    showDialog(type) {
+      if (type == "add") {
+        this.resetTemp();
+      }
+      this.dialogStatus = type;
+      this.dialogFormVisible = true;
+      this.$nextTick(() => {
+        this.$refs["dataForm"].clearValidate();
+      });
+    },
+    createData() {
+      this.$refs["dataForm"].validate((valid) => {
+        if (valid) {
+          createCategory(this.temp).then((res) => {
+              this.getColumnList()
+              this.dialogFormVisible = false
+              this.$mtip.success("添加成功")
+            })
+            .catch((res) => {
+              this.dialogFormVisible = false
+            });
+        }
+      });
+    },
+    updateData() {
+      this.$refs["dataForm"].validate((valid) => {
+        if (valid) {
+          updateCategory(this.temp)
+            .then((res) => {
+              this.dialogFormVisible = false
+              this.resetTemp()
+              this.$mtip.success("修改成功")
+            })
+            .catch(() => {
+              this.dialogFormVisible = false
+            });
+        }
+      });
+    },
+    resetTemp() {
+      this.temp = {
+        id: undefined,
+        title: "",
+         taxis:0
+      };
+    },
+    deleteColumn(id) {
+      this.$mtip.delete(() => {
+        deleteCategory(id)
+          .then((res) => {
+            this.getColumnList()
+            this.$mtip.success("删除成功");
+          })
+      })
+    },
+  },
+};
+</script>
+
+```
+
+最后，确保你的api能正常访问就能得到下面的效果
+
+![UI分类实现效果](../abp_tutorial/images/6.3.gif)
+
+> 内容管理的标签这个功能，这里就不贴出来了。它跟分类差不多的实现逻辑，标签的列表里面不需要添加功能，因为添加功能在添加文章的时候实现的。还有分类呢这里不使用分页，因为分类不会有很多，有需要的也可以自己添加上去。
+
+至此，本章已经完成了UI端的内容管理里面的分类、标签的相关功能，下章将来完成文章相关的部分内容。
 
 
 

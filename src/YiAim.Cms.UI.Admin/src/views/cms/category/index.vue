@@ -69,17 +69,6 @@
         <el-form-item label="名称" prop="title">
           <el-input v-model="temp.title" />
         </el-form-item>
-        <el-form-item label="归属上级">
-          <el-select v-model="temp.parentId" placeholder="请选择">
-            <el-option
-              v-for="item in columnList"
-              :key="item.id"
-              :label="item.title"
-              :value="item.id"
-            >
-            </el-option>
-          </el-select>
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button
@@ -99,11 +88,11 @@
 
 <script>
 import {
-  addColumn,
-  deleteColumn,
-  GetAllColum,
-  updateColumn,
-} from "@/api/column";
+  createCategory,
+  deleteCategory,
+  updateCategory,
+  getAllCategory
+} from "@/api/blogs/category";
 export default {
   filters: {
     statusFilter(status) {
@@ -121,7 +110,7 @@ export default {
       dialogFormVisible: false,
       temp: {
         title: "",
-        parentId: 0,
+        taxis:0
       },
       textMap: {
         update: "编辑",
@@ -132,7 +121,7 @@ export default {
         title: [
           {
             required: true,
-            message: "title is required",
+            message: "分类名称不能为空",
             trigger: "blur",
           },
         ],
@@ -147,7 +136,7 @@ export default {
   methods: {
     getColumnList() {
       this.listLoading = true;
-      GetAllColum()
+      getAllCategory()
         .then((res) => {
           this.columnList = res;
           this.listLoading = false;
@@ -173,14 +162,13 @@ export default {
     createData() {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          addColumn(this.temp).then((res) => {
+          createCategory(this.temp).then((res) => {
               this.getColumnList()
               this.dialogFormVisible = false
               this.$mtip.success("添加成功")
             })
             .catch((res) => {
               this.dialogFormVisible = false
-              this.$mtip.error("添加失败")
             });
         }
       });
@@ -188,7 +176,7 @@ export default {
     updateData() {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          updateColumn(this.temp, this.temp.id)
+          updateCategory(this.temp)
             .then((res) => {
               this.dialogFormVisible = false
               this.resetTemp()
@@ -196,7 +184,6 @@ export default {
             })
             .catch(() => {
               this.dialogFormVisible = false
-              this.$mtip.error("修改失败")
             });
         }
       });
@@ -205,20 +192,15 @@ export default {
       this.temp = {
         id: undefined,
         title: "",
-        imgUrl: "",
-        isWapShow: true,
-        isTopShow: true,
+         taxis:0
       };
     },
     deleteColumn(id) {
       this.$mtip.delete(() => {
-        deleteColumn(id)
+        deleteCategory(id)
           .then((res) => {
             this.getColumnList()
             this.$mtip.success("删除成功");
-          })
-          .catch(() => {
-            this.$mtip.error("删除失败");
           })
       })
     },

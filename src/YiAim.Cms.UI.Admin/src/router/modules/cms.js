@@ -40,10 +40,10 @@ const identityRouter =
             },
             {
                 path: 'tree',
-                name: '栏目',
+                name: '分类',
                 component: () =>
                     import ('@/views/cms/category/index'),
-                meta: { title: '栏目', icon: 'tree' }
+                meta: { title: '分类', icon: 'tree' }
             },
             {
                 path: 'tags',

@@ -8,7 +8,7 @@ import Element from 'element-ui'
 import './styles/element-variables.scss'
 
 import '@/styles/index.scss' // global css
-
+import grobalMsgTip from '@/utils/grobalMsgTip'
 import App from './App'
 import store from './store'
 import router from './router'
@@ -35,7 +35,7 @@ Object.keys(filters).forEach(key => {
 })
 
 Vue.config.productionTip = false
-
+Vue.prototype.$mtip = grobalMsgTip.MessageTip
 new Vue({
   el: '#app',
   router,

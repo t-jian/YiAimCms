@@ -10,5 +10,11 @@ public class CmsApplicationAutoMapperProfile : Profile
         CreateMap<Blog, BaseBlogDto>();
         CreateMap<Blog, BlogDetailDto>();
         CreateMap<Blog, PageBlogDto>();
+
+        CreateMap<Category, BaseCategoryDto>();
+        CreateMap<Category, CategoryDto>();
+
+        CreateMap<CreateCategoryInput, Category>().ReverseMap();
+        CreateMap<EditCategoryInput, Category>();
     }
 }
