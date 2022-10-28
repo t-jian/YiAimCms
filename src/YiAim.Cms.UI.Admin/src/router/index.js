@@ -4,6 +4,7 @@ Vue.use(Router)
 import Layout from '@/layout'
 import identityRouter from "./modules/identity";
 import tenantRouter from "./modules/tenant";
+import cms from "./modules/cms";
 
 export const constantRoutes = [
   {
@@ -64,6 +65,7 @@ export const constantRoutes = [
 
 
 export const asyncRoutes = [
+  cms,
   identityRouter,
   tenantRouter,
   { path: '*', redirect: '/404', hidden: true }
