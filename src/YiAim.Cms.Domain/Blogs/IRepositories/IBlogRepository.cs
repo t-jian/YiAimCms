@@ -7,21 +7,7 @@ using System.Threading.Tasks;
 using Volo.Abp.Domain.Repositories;
 
 namespace YiAim.Cms.Blogs;
-public interface IBlogRepository : IBasicRepository<Blog, int>
+public interface IBlogRepository : IRepository<Blog, int>
 {
-    Task<List<Blog>> GetListAsync(
-        string filter = null,
-        string sorting = null,
-        int maxResultCount = int.MaxValue,
-        int skipCount = 0,
-        CancellationToken cancellationToken = default
-        );
-
-    Task<long> GetCountAsync(
-        string filter = null,
-        CancellationToken cancellationToken = default
-        );
-
-
-    Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+    Task BatchInsert(IEnumerable<Blog> blogs);
 }

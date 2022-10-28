@@ -57,7 +57,7 @@ namespace YiAim.Cms.Web;
     typeof(AbpAspNetCoreSerilogModule),
     typeof(AbpSwashbuckleModule)
     )]
-    public class CmsWebModule : AbpModule
+public class CmsWebModule : AbpModule
 {
     private const string DefaultCorsPolicyName = "Default";
     public override void PreConfigureServices(ServiceConfigurationContext context)
@@ -73,7 +73,7 @@ namespace YiAim.Cms.Web;
                 typeof(CmsWebModule).Assembly
             );
         });
-        
+
         PreConfigure<OpenIddictBuilder>(builder =>
         {
             builder.AddValidation(options =>
@@ -146,7 +146,6 @@ namespace YiAim.Cms.Web;
             );
         });
     }
-    
     private void ConfigureAutoMapper()
     {
         Configure<AbpAutoMapperOptions>(options =>

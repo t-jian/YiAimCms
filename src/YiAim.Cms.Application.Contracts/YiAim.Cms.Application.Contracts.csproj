@@ -21,8 +21,4 @@
     <PackageReference Include="Volo.Abp.SettingManagement.Application.Contracts" Version="6.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Blogs\" />
-  </ItemGroup>
-
 </Project>

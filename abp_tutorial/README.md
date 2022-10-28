@@ -793,6 +793,41 @@ export default {
 <h3 class="title">{{$t('Cms["Login"]')}} </h3>
 //js 里面
 this.$i18n.t("AbpAccount['ThisFieldIsRequired.']")
+
+//i18n.js 
+export function generateTitle(title) {
+  return this.$t(title)
+}
+// router的路由文件里面
+//identity.js
+
+const identityRouter = {
+  path: "/identity",
+  component: Layout,
+  redirect: "noRedirect",
+  name: "Identity",
+  meta: {
+    title: 'AbpIdentity["Menu:IdentityManagement"]',
+    icon: "user"
+  },
+  children: [
+    {
+      path: "roles",
+      component: () => import("@/views/identity/roles"),
+      name: "Roles",
+      meta: { title: 'AbpIdentity["Roles"]', policy: "AbpIdentity.Roles" }
+    },
+    {
+      path: "users",
+      component: () => import("@/views/identity/users"),
+      name: "Users",
+      meta: { title: 'AbpIdentity["Users"]', policy: "AbpIdentity.Users" }
+    }
+  ]
+};
+export default identityRouter;
+
+
 ```
 
 过程可参考【xhznl】大神的文章 https://www.cnblogs.com/xhznl/p/13554571.html
@@ -810,7 +845,7 @@ view放在 `src\views\identity`与 `src\views\tenat`里面
 
 本章到此结束。感谢【xhznl】大神的文章教程，下章将进行内容系统的表，基础接口的搭建。
 
-## 5)内容系统表的搭建
+## 5)内容系统表的搭建&自定义仓储CURD
 
 > 本来是想使用abp的CMS模块但发现里面的东西有点多也不太符合我现有网站的数据结构，有兴趣的小伙伴可下载abp源码看看，里面有很多值得借鉴的地方
 
@@ -825,6 +860,7 @@ view放在 `src\views\identity`与 `src\views\tenat`里面
 - 轮播图（广告轮播）
 - 导航菜单（可有可无）
 - 评论 (不需要，后面有空单独做个评论系统的功能)
+
 
 1. 在 YiAim.Cms.Domain项目新建 Blogs文件夹用于存放所有cms相关的实体表
 
@@ -983,34 +1019,169 @@ public class Tag : FullAuditedAggregateRoot<int>, ITaxis
 3. 进行数据迁移,生成表如下
 ![数据迁移成功](../abp_tutorial/images/5.1.3.png)
 
-4. 定义仓储接口以及现实api接口
+4. 自定义仓储接口
  
  在YiAim.Cms.Domain\Blogs文件夹里面新建IRepositories文件夹用于存放blog相关的自定义仓储
- 如：
+ 如：IBlogRepository 继承IBasicRepository或者 IRepository
+ > abp框架中已经默认给我们实现了默认的通用(泛型)仓储`IRepository<TEntity, TKey>`，有着标准的CRUD操作，具体可以在：https://docs.abp.io/zh-Hans/abp/latest/Repositories 查看更多
+ > 之所以实现自定义仓储是因为有些东西是abp没有给我们，如实现批量插入、更新的方法；（微软官方推荐的EFCore的工具与扩展 https://learn.microsoft.com/zh-cn/ef/core/extensions/）
+
+IBlogRepository.cs
  ```
-public interface IBlogRepository : IBasicRepository<Blog, int>
+public interface IBlogRepository : IRepository<Blog, int>
 {
-    Task<List<Blog>> GetListAsync(
-        string filter = null,
-        string sorting = null,
-        int maxResultCount = int.MaxValue,
-        int skipCount = 0,
-        CancellationToken cancellationToken = default
-        );
-
-    Task<long> GetCountAsync(
-        string filter = null,
-        CancellationToken cancellationToken = default
-        );
-
-
-    Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+    Task BatchInsert(IEnumerable<Blog> blogs);
 }
  ```
+5. 既然定义了仓储那就实现，不然调用的时候会报错
 
+在YiAim.Cms.EntityFrameworkCore里面新建 Repositories文件夹，里面新建BlogRepository.cs 
+使用 EF Core 需要继承 `EfCoreRepository<TDbContext, TEntity, TKey>` 和自定义仓储接口`IXxxRepository`
+
+BlogRepository.cs 
+```
+public class BlogRepository : EfCoreRepository<CmsDbContext, Blog, int>, IBlogRepository
+{
+    public BlogRepository(IDbContextProvider<CmsDbContext> dbContextProvider) : base(dbContextProvider)
+    {
+    }
+    public async Task BatchInsert(IEnumerable<Blog> blogs)
+    {
+        var db = await GetDbContextAsync();
+        await db.AddRangeAsync(blogs);
+        await db.SaveChangesAsync();
+    }
+}
+
+```
+
+接下来在就可以在.Application服务层愉快的读取数据了，写服务之前，先分析项目需要哪些功能业务。
+由于是个人网站（博客项目），无非就是增删改查，后期对网站进行优化是添加缓存、定时任务之类的功能一个简单的网站差不多就成型了。
+
+6. 在YiAim.Cms.Application.Contracts定义api接口、DTO模型 (DTO就是从我们的领域模型中抽离出来的对象，它只包含我们要拿的数据，不参杂任何行为逻辑)
+新建Blogs文件夹，然后再来新建IBlogService继承IApplicationService,里面定义我们业务需要的数据接口
+```
+public interface IBlogService : IApplicationService
+{
+    #region 用于后台的接口
+    Task Add(AddBlogInput input);
+    Task<PagedList<PageBlogDto>> Page(PagingInput requestDto);
+    #endregion
+}
+```
+7. 在YiAim.Cms.Application实现接口
+
+新建Blogs文件夹，然后再来新建BlogService继承ApplicationService，IBlogService
+
+```
+public class BlogService : ApplicationService, IBlogService
+{
+    private readonly IBlogRepository _blogRepository;
+    public BlogService(IBlogRepository blogRepository)
+    {
+        _blogRepository = blogRepository;
+    }
+
+    public Task Add(AddBlogInput input)
+    {
+        return Task.FromResult("");
+    }
+    public async Task<PagedList<PageBlogDto>> Page(PagingInput requestDto)
+    {
+        PagedList<PageBlogDto> pagedResult = new();
+        var items = await _blogRepository.GetPagedListAsync((requestDto.Page-1)*requestDto.Limit, requestDto.Limit, "");
+        pagedResult.Items= ObjectMapper.Map<List<Blog>, List<PageBlogDto>>(items);
+        return pagedResult;
+    }
+}
+//PagingInput.cs
+public class PagingInput : IPageRequestRequest
+{
+    [Range(1, int.MaxValue)]
+    public virtual int Page { get; set; } = 1;
+    [Range(1, int.MaxValue)]
+    public virtual int Limit { get; set; } = 10;
+}
+//PagedList.cs
+public class PagedList<T> where T : class
+{
+    public long Count { get; set; }
+
+    public List<T> Items { get; set; }
+}
+
+```
+8. 测试调用
+
+在Controller中调用，可以直接注入服务的方式实现
+如：在 YiAim.Cms.HttpApi ，新建Controller
+
+HelloAbpController.cs 继承 CmsController，CmsController为创建abp项目默认有的一个基类,它里面已经默认继承了abp的基类
+
+```
+//CmsController
+public abstract  class CmsController : AbpControllerBase
+{
+    protected CmsController()
+    {
+        LocalizationResource = typeof(CmsResource);
+    }
+ 
+}
+
+public class HelloAbpController : CmsController
+{
+    private readonly IBlogService _blogService;
+    public HelloAbpController(IBlogService blogService)
+    {
+        _blogService = blogService;
+    }
+    public async Task<dynamic> Test()
+    {
+        var result = await _blogService.Page(new PagingInput(1, 10));
+        return result;
+        // return await Task.FromResult("111");
+    }
+}
+
+```
+然后运行项目，访问 `https://localhost:44377/HelloAbp/test` 就可以看到结果了(前提是你的数据库里面有内容)
+
+![结果1](../abp_tutorial/images/5.1.5.png)
+
+![结果](../abp_tutorial/images/5.1.4.png)
+
+9. 总计
+abp的数据访问
+- 1.创建实体，完成实体与数据库表的映射关系
+- 2.自定义仓储方法及实现对应的读取方法，一般来说使用abp提供的仓储方法已经够小型的项目使用
+
+最后，abp提供了 自动API控制器，不需要我们写controller,直接在服务层配置就可以自动生成api接口，详情请看 https://docs.abp.io/zh-Hans/abp/latest/API/Auto-API-Controllers
+
+后面我们的这个项目也基本使用这种模式开发，减少工作量&也方便测试。
+
+在来看一下 自动api控制器生成的api接口，打开swagger就可以看到对应api,还可以方便测试。
+
+![结果2](../abp_tutorial/images/5.1.6.png)
+
+此时整个项目目录结构如下：
+![项目目录结构](../abp_tutorial/images/5.1.7.png)
+
+本章已经完成了表的搭建&自定义仓储CURD，Entity Framework Core的数据访问，由于代码太多这里就不全部帖出来，相信各位小伙伴都能完成。
+有需要的也可以直接拉取项目。下章我们将对接vue项目完成UI界面的操作。
 
 
 //对接github、gitee、qq完成多个第三方账号进行登录【多账号统一登录】
+
+
+## 6）vue项目完成blog UI界面逻辑操作
+
+> 现来看一下目前我个人网站实现的管理后台的效果，现这个管理后台也差不多是这个逻辑
+![管理后台的效果](../abp_tutorial/images/6.1.gif)
+
+
+
+
 
 
 
