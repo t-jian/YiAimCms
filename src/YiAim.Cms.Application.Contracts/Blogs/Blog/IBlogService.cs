@@ -11,5 +11,6 @@ public interface IBlogService :ICrudAppService<BlogDetailDto, PageBlogDto, int, 
 {
 
     Task UpdateTaxis(UpdateBlogCategoryInput input);
+    Task BatchDeleteIds(BatchDeleteIdsInput input);
 }
 

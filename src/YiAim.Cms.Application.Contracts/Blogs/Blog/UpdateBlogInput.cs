@@ -51,4 +51,5 @@ public class UpdateBlogInput
     /// </summary>
     public long PublishDate { get; set; }
     public string Extend { get; set; }
+    public string Tags { get; set; }
 }

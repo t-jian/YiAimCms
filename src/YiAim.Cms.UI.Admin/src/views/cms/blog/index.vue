@@ -168,7 +168,7 @@
 <script>
 import waves from "@/directive/waves";
 import Pagination from "@/components/Pagination";
-import { getPage, updateTaxis } from "@/api/blogs/blog";
+import { deleteBlog, getPage, updateTaxis,batchDeleteIds } from "@/api/blogs/blog";
 import { getAllCategory } from "@/api/blogs/category";
 import ImageCropper from "@/components/ImageCropper";
 export default {
@@ -276,12 +276,9 @@ export default {
         this.$message.info("请选择要删除的项！");
       }
       let loading = this.$mtip.loading();
-      article
-        .batchDelete(this.sels.join(","))
+     batchDeleteIds(this.sels.join(","))
         .then((res) => {
-          res.success
-            ? this.$mtip.success(res.message)
-            : this.$mtip.error(res.message);
+          this.$mtip.success('删除成功')
           this.getList();
           loading.close();
         })
@@ -295,16 +292,13 @@ export default {
     handleUpdate(id) {
       this.$router.push({ path: "/cms/edit/" + id });
     },
-    handleDelete(row) {
+    handleDelete(id) {
       var _this = this;
       this.$mtip.delete(() => {
         let loading = this.$mtip.loading();
-        article
-          .delete(row)
-          .then((res) => {
-            res.success
-              ? this.$message.success("删除成功")
-              : this.$message.error(res.message);
+        deleteBlog(id)
+          .then(() => {
+            this.$message.success("删除成功")
             _this.getList();
             loading.close();
           })

@@ -41,6 +41,8 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Cors;
 using System.Net.Http;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Http;
 
 namespace YiAim.Cms.Web;
 
@@ -94,6 +96,7 @@ public class CmsWebModule : AbpModule
         ConfigureBundles();
         ConfigureAutoMapper();
         ConfigureVirtualFileSystem(hostingEnvironment);
+        ConfigureFile(hostingEnvironment);
         ConfigureLocalizationServices();
         ConfigureNavigationServices();
         ConfigureAutoApiControllers();
@@ -153,7 +156,14 @@ public class CmsWebModule : AbpModule
             options.AddMaps<CmsWebModule>();
         });
     }
-
+    private void ConfigureFile(IWebHostEnvironment hostingEnvironment)
+    {
+        Configure<Files.FileOptions>(options =>
+        {
+            options.BaseRoot = hostingEnvironment.ContentRootPath;
+            options.FileUploadRootFolder = "staticfiles";
+        });
+    }
     private void ConfigureVirtualFileSystem(IWebHostEnvironment hostingEnvironment)
     {
         if (hostingEnvironment.IsDevelopment())
@@ -205,7 +215,22 @@ public class CmsWebModule : AbpModule
             }
         );
     }
-
+    private void ConfigureStaticFiles(IApplicationBuilder app)
+    {
+        app.UseStaticFiles();
+        string staticFileRoot = Path.Combine(Directory.GetCurrentDirectory(), "staticfiles");
+        if (!System.IO.Directory.Exists(staticFileRoot))
+            System.IO.Directory.CreateDirectory(staticFileRoot);
+        app.UseStaticFiles(new StaticFileOptions()
+        {
+            FileProvider = new PhysicalFileProvider(staticFileRoot),
+            RequestPath = new PathString("/staticfiles"),
+            //OnPrepareResponse = ctx =>
+            //{
+            //    ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=36000");
+            //}
+        });
+    }
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();
@@ -224,7 +249,8 @@ public class CmsWebModule : AbpModule
         }
 
         app.UseCorrelationId();
-        app.UseStaticFiles();
+        ConfigureStaticFiles(app);
+       
         app.UseRouting();
         app.UseCors(DefaultCorsPolicyName);
         app.UseAuthentication();

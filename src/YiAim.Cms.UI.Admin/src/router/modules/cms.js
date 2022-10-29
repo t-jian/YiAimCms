@@ -26,7 +26,7 @@ const identityRouter =
                 path: 'create',
                 component: () =>
                     import ('@/views/cms/blog/create'),
-                name: 'CreateArticle',
+                name: '创建文章',
                 meta: { title: 'Create Article', icon: 'edit', activeMenu: '/cms/blog' },
                 hidden: true
             },
@@ -34,7 +34,7 @@ const identityRouter =
                 path: 'edit/:id(\\d+)',
                 component: () =>
                     import ('@/views/cms/blog/edit'),
-                name: 'EditArticle',
+                name: '编辑文章',
                 meta: { title: 'editArticle', noCache: true, activeMenu: '/cms/blog' },
                 hidden: true
             },

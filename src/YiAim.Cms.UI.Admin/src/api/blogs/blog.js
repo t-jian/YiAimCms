@@ -47,3 +47,11 @@ export function updateTaxis(id, cid) {
     data
   })
 }
+
+export function batchDeleteIds(ids) {
+  return request({
+    url: '/api/app/blog/BatchDeleteIds',
+    method: 'post',
+    data:{ids}
+  })
+}

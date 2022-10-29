@@ -75,7 +75,7 @@ public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, int,
         }
         //编码存入数据库
         input.Content = UrlEncoder.Default.Encode(input.Content);
-        Blog blog = await Repository.InsertAsync(ObjectMapper.Map<CreateBlogInput, Blog>(input),true);
+        Blog blog = await Repository.InsertAsync(ObjectMapper.Map<CreateBlogInput, Blog>(input), true);
         if (tags.Count > 0)
         {
             List<TagMap> articleTags = new();
@@ -83,8 +83,94 @@ public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, int,
             {
                 articleTags.Add(new TagMap { BlogId = blog.Id, TagId = tag.Id });
             });
-           await _tagMapRepository.InsertManyAsync(articleTags);
+            await _tagMapRepository.InsertManyAsync(articleTags);
         }
         return ObjectMapper.Map<Blog, BlogDetailDto>(blog);
+    }
+    [UnitOfWork]
+    public override async Task<BlogDetailDto> UpdateAsync(int id, UpdateBlogInput input)
+    {
+        var blog = await Repository.FirstOrDefaultAsync(n => n.Id == id);
+        if (blog is null)
+            throw new UserFriendlyException("文章不存在");
+        //先解除所有标签关联
+
+        var tm = await _tagMapRepository.GetListAsync(n => n.BlogId == blog.Id);
+        if (tm.Count() > 0)
+            await _tagMapRepository.DeleteManyAsync(tm.ToList());
+
+        List<Tag> tags = new();
+        if (!string.IsNullOrWhiteSpace(input.Tags))
+        {
+            foreach (string tagStr in input.Tags.Split(','))
+            {
+                Tag tag = await _tagRepository.FirstOrDefaultAsync(n => n.Name.Equals(tagStr));
+                if (tag is null)
+                {
+                    tag = new Tag
+                    {
+                        Name = tagStr,
+                        Taxis = 0,
+                    };
+                    await _tagRepository.InsertAsync(tag, true);
+                }
+                tags.Add(tag);
+            }
+        }
+        if (string.IsNullOrWhiteSpace(input.Digest))
+        {
+            string desc = "";
+            //RichTextHtmlHelper.ReplaceAllTag(input.Content);
+            if (desc.Length > 200)
+                desc = desc.Substring(0, desc.Length - 1);
+            input.Digest = desc;
+        }
+        //编码存入数据库
+        input.Content = UrlEncoder.Default.Encode(input.Content);
+        blog.Title = input.Title;
+        blog.ThumbImg = input.ThumbImg;
+        blog.Author = input.Author;
+        blog.Status = input.Status;
+        blog.Content = input.Content;
+        blog.PublishDate = input.PublishDate;
+        blog.Taxis = input.Taxis;
+        blog.Digest = input.Digest;
+        blog.Source = input.Source;
+        await Repository.UpdateAsync(blog);
+        if (tags.Count > 0)
+        {
+            List<TagMap> articleTags = new();
+            tags.ForEach(tag =>
+            {
+                articleTags.Add(new TagMap { BlogId = blog.Id, TagId = tag.Id });
+            });
+            await _tagMapRepository.InsertManyAsync(articleTags);
+        }
+        return ObjectMapper.Map<Blog, BlogDetailDto>(blog);
+    }
+
+    [UnitOfWork]
+    [HttpPost("/api/app/blog/BatchDeleteIds")]
+    public async Task BatchDeleteIds(BatchDeleteIdsInput input)
+    {
+        //删除要删除关联的标签、图片等资源
+        foreach (string id in input.Ids.Split(','))
+        {
+            await DeleteById(Convert.ToInt32(id));
+        }
+    }
+
+    [UnitOfWork]
+    private async Task DeleteById(int id)
+    {
+        Blog blog = await Repository.FirstOrDefaultAsync(b => b.Id == id);
+        if (blog is not null)
+        {
+            //这里可以使用其他方法直接删除，不用查询
+            var tagmaps = await _tagMapRepository.GetListAsync();
+            if (tagmaps.Count > 0)
+                await _tagMapRepository.DeleteManyAsync(tagmaps);
+            await Repository.DeleteAsync(blog);
+        }
     }
 }

@@ -1,24 +1,31 @@
-import { getBlogById, createBlog, updateBlog } from "@/api/blogs/blog";
-import { getAllCategory, getCategoryById } from "@/api/blogs/category";
-
-import ueditor from "vue-ueditor-wrap";
-import htmlFormat from "../../utils/htmlFormatHelper";
+import { getBlogById, createBlog, updateBlog } from "@/api/blogs/blog"
+import { getAllCategory } from "@/api/blogs/category"
+import{upload}from "@/api/file"
+import ueditor from "vue-ueditor-wrap"
+import htmlFormat from "../../utils/htmlFormatHelper"
 export default {
   components: {
     ueditor,
   },
+  props: {
+    isEdit: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data() {
     return {
       isShowEdit: false,
-      isEditorInit:false,
+      isEditorInit: false,
       titleMaxLen: 120,
       descMaxLen: 160,
       isTitleWordCount: false,
       isAuthorWordCount: false,
-      categories:[],
+      categories: [],
       confirmLoading: false,
       publishDate: new Date(),
-      article: {id: 0,
+      article: {
+        id: 0,
         categoryId: 0,
         title: "",
         author: "",
@@ -30,14 +37,14 @@ export default {
         digest: "",
         content: "",
         tags: "",
-        publishDate: ""},
+        publishDate: "",
+      },
       editorConfig: "",
       editorDependencies: [
         "ueditor.config.js",
         "ueditor.all.js",
         "ueditor.parse.js",
       ],
-      isEdit: false,
       dynamicTags: [],
       inputVisible: false,
       inputValue: "",
@@ -77,42 +84,48 @@ export default {
     this.showTemplList = [];
     this.confirmLoading = true;
     this.initEditor();
-    Promise.all([getAllCategory(), this.getArticle(0)])
-    .then((res) => {
-      this.categories = res[0];
-      if(this.categories.length>0){
-        this.article.categoryId=this.categories[0].id
-      }
-      if (res[1] != null) {
-        let detail = res[1];
-        this.article = detail;
-        this.article.content = decodeURIComponent(this.article.content);
-        if (detail.thumbImg != "") {
-          var index = 0;
-          var vv = [];
-          for (var img of detail.thumbImg.split("|")) {
-            index++;
-            vv.push({
-              uid: index + "",
-              name: img,
-              status: "done",
-              url: img,
-              thumbUrl: img,
-            });
-          }
-          this.thumbList = vv;
+
+    let id = 0;
+    if (this.isEdit) {
+      id = this.$route.params && this.$route.params.id;
+    }
+    Promise.all([getAllCategory(), this.getArticle(id)])
+      .then((res) => {
+        this.categories = res[0];
+        if (this.categories.length > 0) {
+          this.article.categoryId = this.categories[0].id;
         }
-        // if (detail.articleTags != null) {
-        //   for (var item of detail.articleTags) {
-        //     this.dynamicTags.push(item.tag.name);
-        //   }
-        // }
-      } 
-      this.confirmLoading = false;
-    })
-    .finally( ()=> {
-      this.confirmLoading = false;
-    });
+        console.log(res[1],666)
+        if (res[1] != null) {
+          let detail = res[1];
+          this.article = detail;
+          this.article.content = decodeURIComponent(this.article.content);
+          if (detail.thumbImg != "") {
+            var index = 0;
+            var vv = [];
+            for (var img of detail.thumbImg.split("|")) {
+              index++;
+              vv.push({
+                uid: index + "",
+                name: img,
+                status: "done",
+                url: img,
+                thumbUrl: img,
+              });
+            }
+            this.thumbList = vv;
+          }
+          // if (detail.articleTags != null) {
+          //   for (var item of detail.articleTags) {
+          //     this.dynamicTags.push(item.tag.name);
+          //   }
+          // }
+        }
+        this.confirmLoading = false;
+      })
+      .finally(() => {
+        this.confirmLoading = false;
+      });
   },
   computed: {
     calcDescLength() {
@@ -130,7 +143,10 @@ export default {
     window.addEventListener("scroll", this.scrolling);
   },
 
-  beforeDestroy() {},
+  beforeDestroy() {
+    //this.editorInstance.destroy()
+    window.removeEventListener('scroll', this.scrolling, false);
+  },
   watch: {
     "article.content"(newValue, oldValue) {
       this.isShowContentTip =
@@ -139,20 +155,23 @@ export default {
   },
   methods: {
     scrolling() {
-     //动态设置编辑器工具栏的距离顶部的位置，主要是使用js控制css变量（--topBar）
+      //动态设置编辑器工具栏的距离顶部的位置，主要是使用js控制css变量（--topBar）
       let scrollTop =
         window.pageYOffset ||
         document.documentElement.scrollTop ||
         document.body.scrollTop;
-        let t=82-scrollTop
-        document.documentElement.style.setProperty('--topBar',(t>0?t:0)+'px')
+      let t = 82 - scrollTop;
+      document.documentElement.style.setProperty(
+        "--topBar",
+        (t > 0 ? t : 0) + "px"
+      );
     },
     titleFocus() {
       this.isTitleWordCount = true;
     },
     blur() {
       if (this.article.title.length <= this.titleMaxLen) {
-         this.isTitleWordCount = false;
+        this.isTitleWordCount = false;
       }
       if (this.article.author.length <= 8) {
         this.isAuthorWordCount = false;
@@ -160,7 +179,7 @@ export default {
     },
     getArticle(id) {
       if (this.isEdit) {
-        return getCategoryById(id);
+        return getBlogById(id);
       } else {
         return new Promise((resolve, reject) => {
           resolve(null);
@@ -189,10 +208,8 @@ export default {
       var ext = filePath.substr(index);
       const formData = new FormData();
       formData.append("file", e.file);
-      sysFileInfoUpload(formData)
-        .then((res) => {
-          if (res.success) {
-            let img = "/upload/temp/" + res.data + ext;
+      upload(formData).then((res) => {
+            let img =res;
             this.thumbList.push({
               uid: e.file.uid,
               name: img,
@@ -200,10 +217,6 @@ export default {
               url: img,
               thumbUrl: img,
             });
-            e.onSuccess(res.data);
-          } else {
-            e.onError(new Error("上传失败"));
-          }
         })
         .catch((err) => {
           e.onError(err);
@@ -296,8 +309,8 @@ export default {
       };
     },
     readyUeditor(editorInstance) {
-        this.isEditorInit=true
-       console.info("编辑器初始化完成");
+      this.isEditorInit = true;
+      console.info("编辑器初始化完成");
     },
     submitForm(status) {
       if (this.article.title == "") {
@@ -311,46 +324,49 @@ export default {
         return n.url;
       });
       this.article.thumbImg = imgs.join("|");
-      this.article.publishDate = parseInt(new Date(this.publishDate).getTime() / 1000);
+      this.article.publishDate = parseInt(
+        new Date(this.publishDate).getTime() / 1000
+      );
       this.article.status = status;
+      this.confirmLoading = true;
       if (this.isEdit) {
-        ArticleEdit(this.article).then((res) => {
-          this.confirmLoading = false;
-          if (res.success) {
-            message.success("修改成功");
+        updateBlog(this.article).then((res) => {
+            this.confirmLoading = false;
+            this.$mtip.success("修改成功");
             this.rollback();
-          } else {
-            message.error(res.message);
-          }
+        }).catch(()=>{
+            this.confirmLoading = false;
         });
       } else {
         createBlog(this.article).then((res) => {
           this.confirmLoading = false;
           this.$mtip.success("添加成功");
           this.rollback();
+        }).catch(()=>{
+            this.confirmLoading = false;
         });
       }
     },
-    rollback(){
-        //返回
-        this.$router.push({ path: "/cms/blog" });
+    rollback() {
+      //返回
+      this.$router.push({ path: "/cms/blog" });
     },
     /**tag */
     handleInputConfirm() {
-        console.log(111)
-        let inputValue = this.inputValue;
-        if (inputValue) {
-          this.dynamicTags.push(inputValue);
-        }
-        this.inputVisible = false;
-        this.inputValue = '';
+      console.log(111);
+      let inputValue = this.inputValue;
+      if (inputValue) {
+        this.dynamicTags.push(inputValue);
+      }
+      this.inputVisible = false;
+      this.inputValue = "";
     },
     handleClose(tag) {
-        this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1)
+      this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
     },
     showInput() {
       this.inputVisible = true;
-      this.$nextTick(_ => {
+      this.$nextTick((_) => {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     },

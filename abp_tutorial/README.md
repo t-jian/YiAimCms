@@ -1171,7 +1171,7 @@ abp的数据访问
 有需要的也可以直接拉取项目。下章我们将对接vue项目完成UI界面的操作。
 
 
-//对接github、gitee、qq完成多个第三方账号进行登录【多账号统一登录】
+
 
 
 ## 6）vue项目完成blog UI界面逻辑操作
@@ -3143,7 +3143,313 @@ articleEdit.css 放在 src\styles里面
 ![目前实现的效果](../abp_tutorial/images/7.4.gif)
 
 
-到此，本章就基本完成文章管理&富文本百度编辑器（UEditor）的使用，文章的修改、删除之类的功能就不再贴出源码，有需要的可以拉取源码看一看。内容管理里面，还差一个上传文件（图片）的功能。下章就完成图片上传、裁剪的相关功能。
+到此，本章就基本完成文章管理&富文本百度编辑器（UEditor）的使用，文章的修改、删除之类的功能就不再贴出源码，有需要的可以拉取源码看一看。内容管理系统里面还差一个上传文件（图片）的功能。下章就完成图片上传、裁剪的相关功能。
+
+## 8) 文件上传&图片裁剪上传
+
+- 在abp `YiAim.Cms.Application.Contracts` 里面新建Files文件夹，新建
+
+IFileAppService.cs
+```
+public interface IFileAppService : IApplicationService
+{
+    Task<byte[]> GetAsync(string name);
+
+    Task<string> CreateAsync(FileUploadInput input);
+}
+//FileUploadInput
+public class FileUploadInput
+    {
+        [Required]
+        public byte[] Bytes { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+    }
+```
+- 在 `YiAim.Cms.Application`  里面新建Files文件夹，新建
+FileAppService.cs
+```
+[RemoteService(IsMetadataEnabled = false)]
+public class FileAppService : ApplicationService, IFileAppService
+{
+    private readonly FileOptions _fileOptions;
+
+    public FileAppService(IOptions<FileOptions> fileOptions)
+    {
+        _fileOptions = fileOptions.Value;
+    }
+
+    public Task<byte[]> GetAsync(string name)
+    {
+        Check.NotNullOrWhiteSpace(name, nameof(name));
+
+        var filePath = Path.Combine(_fileOptions.BaseRoot, _fileOptions.FileUploadRootFolder, name);
+
+        if (File.Exists(filePath))
+        {
+            return Task.FromResult(File.ReadAllBytes(filePath));
+        }
+        return Task.FromResult(new byte[0]);
+    }
+
+    public Task<string> CreateAsync(FileUploadInput input)
+    {
+        if (input.Bytes.IsNullOrEmpty())
+        {
+            throw new AbpValidationException("Bytes can not be null or empty!",
+                new List<ValidationResult>
+                {
+                    new ValidationResult("Bytes can not be null or empty!", new[] {"Bytes"})
+                });
+        }
+
+        if (input.Bytes.Length > _fileOptions.MaxFileSize)
+        {
+            throw new UserFriendlyException($"File exceeds the maximum upload size ({_fileOptions.MaxFileSize / 1024 / 1024} MB)!");
+        }
+
+        if (!_fileOptions.AllowedUploadFormats.Contains(Path.GetExtension(input.Name)))
+        {
+            throw new UserFriendlyException("Not a valid file format!");
+        }
+        string path = _fileOptions.FilePathFormat.Replace("{FileUploadLocalFolder}", _fileOptions.FileUploadRootFolder);
+        path = path.Replace("{FileTypeFormat}", _fileOptions.IsDistinguishType ? FileUtils.GetFileTypeFormat(Path.GetExtension(input.Name)).ToString() : FileTypeFormat.file.ToString());
+        path = path.Replace("{yyyy}", DateTime.Now.ToString("yyyy"))
+                .Replace("{mm}", DateTime.Now.ToString("MM"))
+                .Replace("{dd}", DateTime.Now.ToString("dd"));
+        var fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(input.Name);
+        var filePath = Path.Combine(_fileOptions.BaseRoot, path, fileName);
+        if (!Directory.Exists(path))
+            Directory.CreateDirectory(path);
+        File.WriteAllBytes(filePath, input.Bytes);
+        return Task.FromResult("/" + path + fileName);
+    }
+}
+
+//FileOptions
+  public class FileOptions
+    {
+        public string BaseRoot { get; set; }
+        /// <summary>
+        /// 文件上传的根目录
+        /// </summary>
+        public string FileUploadRootFolder { get; set; } = "Upload";
+
+
+        /// <summary>
+        /// 是否根据文件后缀归类
+        /// </summary>
+        public bool IsDistinguishType { get; set; } = true;
+        public string FilePathFormat { get; set; } = "{FileUploadLocalFolder}/{FileTypeFormat}/{yyyy}/{mm}{dd}/";
+
+
+        /// <summary>
+        /// 允许的文件最大大小单位B
+        /// </summary>
+        public long MaxFileSize { get; set; } = 5 * 1024 * 1024;//5MB
+
+        /// <summary>
+        /// 允许的文件类型
+        /// </summary>
+        public string[] AllowedUploadFormats { get; set; } = { ".jpg", ".jpeg", ".png", ".gif" };
+
+       
+
+    }
+
+    public static class FileUtils
+    {
+        public static FileTypeFormat GetFileTypeFormat(string fileSuffix)
+        {
+            fileSuffix = fileSuffix.ToLower();
+            if (".jpg,.jpeg,.png,.gif,webp".Contains(fileSuffix))
+            {
+                return FileTypeFormat.image;
+            }
+            if (".mp4,.3gp,.avi".Contains(fileSuffix))
+            {
+                return FileTypeFormat.video;
+            }
+            return FileTypeFormat.file;
+        }
+    }
+    public enum FileTypeFormat
+    {
+        image,
+        file,
+        video,
+    }
+```
+
+- 在 `YiAim.Cms.HttpApi`里Controllers 新建
+
+FileController.cs
+```
+public class FileController : CmsController
+    {
+        private readonly IFileAppService _fileAppService;
+        public FileController(IFileAppService fileAppService)
+        {
+            _fileAppService = fileAppService;
+        }
+
+        [HttpGet]
+        [Route("/api/file/{name}")]
+        public async Task<FileResult> GetAsync(string name)
+        {
+            var bytes = await _fileAppService.GetAsync(name);
+            return File(bytes, MimeTypes.GetByExtension(Path.GetExtension(name)));
+        }
+
+        [HttpPost]
+        [Route("/api/file/upload")]
+        public async Task<string> CreateAsync(IFormFile file)
+        {
+            if (file == null)
+                throw new UserFriendlyException("请上传文件");
+            var bytes = await file.GetAllBytesAsync();
+            var result = await _fileAppService.CreateAsync(new FileUploadInput()
+            {
+                Bytes = bytes,
+                Name = file.FileName
+            });
+            return await Task.FromResult(result);
+        }
+    }
+```
+
+- 在 `YiAim.Cms.Web` 里面的 `CmsWebModule`配置
+
+```
+   private void ConfigureFile(IWebHostEnvironment hostingEnvironment)
+    {
+        Configure<Files.FileOptions>(options =>
+        {
+            options.BaseRoot = hostingEnvironment.ContentRootPath;
+            options.FileUploadRootFolder = "staticfiles";
+        });
+    }
+```
+
+到此后台的上传文件已经完成了，可以来看一下效果
+
+![上传文件1](../abp_tutorial/images/8.1.gif)
+![上传文件2](../abp_tutorial/images/8.1.gif)
+
+> 文件上传是很多系统都会涉及到的一个基础功能，在ABP的模块化思路下，文件管理可以做成一个通用的模块，便可以在多个项目中复用，后面也许会把 现在的文件上传相关的代码抽出变成，自己一个文件管理的模块~
+
+后台的api文件上传完成了，现在切换到vue里面，继续完成文章管理里面的图片上传
+- 在src\api 新建file.js ,然后再文章里面使用接口
+
+```
+import request from '@/utils/abpRequest'
+
+export function upload(data) {
+    return request({
+      url: '/api/file/upload',
+      method: 'post',
+      data
+    })
+  }
+```
+el-upload 组件里自定义上传（http-request）或者直接 action="/api/file/upload"，这里使用自定义上传
+```
+<el-upload
+          action="#"
+           :before-upload="beforeUpload"
+           :http-request="upload"
+                                >
+                                  <span style="font-size: 12px"
+                                    >选择图片上传</span
+                                  >
+                                </el-upload>
+```
+js method 里面
+upload(e)
+```
+      upload(e) {
+      var filePath = e.file.name;
+      var index = filePath.lastIndexOf(".");
+      var ext = filePath.substr(index);
+      const formData = new FormData();
+      formData.append("file", e.file);
+      upload(formData).then((res) => {
+            let img =res;
+            this.thumbList.push({
+              uid: e.file.uid,
+              name: img,
+              status: "done",
+              url: img,
+              thumbUrl: img,
+            });
+        })
+        .catch((err) => {
+          e.onError(err);
+        });
+    },
+```
+到此，图片上传已经可以了！ 如下效果
+
+![图片上传效果](../abp_tutorial/images/8.4.png)
+
+但是图片并没有显示出来，本地开发需要配置反向代理，正式部署的话可以使用nginx配置代理或者直接将vue项目跟api项目一起打包部署
+
+- abp里面配置静态文件访问
+在 `YiAim.Cms.Web`，`CmsWebModule.cs`里面OnApplicationInitialization使用（ConfigureStaticFiles）
+```
+private void ConfigureStaticFiles(IApplicationBuilder app)
+    {
+        app.UseStaticFiles();
+        string staticFileRoot = Path.Combine(Directory.GetCurrentDirectory(), "staticfiles");
+        if (!System.IO.Directory.Exists(staticFileRoot))
+            System.IO.Directory.CreateDirectory(staticFileRoot);
+        app.UseStaticFiles(new StaticFileOptions()
+        {
+            FileProvider = new PhysicalFileProvider(staticFileRoot),
+            RequestPath = new PathString("/staticfiles"),
+            //OnPrepareResponse = ctx =>
+            //{
+            //    ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=36000");
+            //}
+        });
+    }
+``` 
+- 本地开发配置反向代理
+
+在  `vue.config.js` 里面的 devServer里面配置
+
+```
+proxy: {
+      //代理api 
+      "/api": {
+          target: api_root,
+          changeOrigin: true,
+          pathRewrite: {
+              "^/api": "/api"
+          }
+      },
+      //代理静态资源访问
+      "/staticfiles": {
+          target: api_root,
+          changeOrigin: true,
+          pathRewrite: {
+              "^/staticfiles": "/staticfiles"
+          }
+      },
+```
+![devServer里面配置](../abp_tutorial/images/8.5.png)
+
+重写运行vue项目,此时图片已经正常显示出来了
+
+![图片已经正常显示](../abp_tutorial/images/8.6.png)
+
+图片裁剪使用的是vue的组件 `ImageCropper`,vue-element-admin框架好像自带了裁剪功能，这里就不贴代码了，需要就拉源码吧。
+
+到这里本章就结束了。下章来完成 接口权限，swagger上锁以及第三方登录
+
+
+//对接github、gitee、qq完成多个第三方账号进行登录【多账号统一登录】
 
 
 
