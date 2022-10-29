@@ -53,4 +53,10 @@
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="uEditorConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

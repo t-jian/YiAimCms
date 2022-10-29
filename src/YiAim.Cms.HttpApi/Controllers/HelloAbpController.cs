@@ -16,10 +16,5 @@ public class HelloAbpController : CmsController
     {
         _blogService = blogService;
     }
-    public async Task<dynamic> Test()
-    {
-        var result = await _blogService.Page(new PagingInput(1, 10));
-        return result;
-        // return await Task.FromResult("111");
-    }
+   
 }

@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="UEditor.Core" Version="1.0.6" />
     <PackageReference Include="Volo.Abp.Account.HttpApi" Version="6.0.0" />
     <PackageReference Include="Volo.Abp.Identity.HttpApi" Version="6.0.0" />
     <PackageReference Include="Volo.Abp.PermissionManagement.HttpApi" Version="6.0.0" />

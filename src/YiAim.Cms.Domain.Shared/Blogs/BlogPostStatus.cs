@@ -6,13 +6,10 @@ using System.Text;
 namespace YiAim.Cms.Blogs;
 public enum BlogPostStatus
 {
-    /// <summary>
-    /// 草稿
-    /// </summary>
-    [Description("草稿")]
-    Draft,
     [Description("已发布")]
-    Published,
+    Published = 1,
+    [Description("草稿")]
+    Draft=2,
     [Description("待审核")]
-    WaitingForReview
+    WaitingForReview=3
 }

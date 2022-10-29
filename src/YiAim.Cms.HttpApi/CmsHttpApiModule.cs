@@ -8,6 +8,7 @@ using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement.HttpApi;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
+using UEditor.Core;
 
 namespace YiAim.Cms;
 
@@ -24,6 +25,9 @@ namespace YiAim.Cms;
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        var _services = context.Services;
+        _services.AddUEditorService(configFileRelativePath: "uEditorConfig.json", isCacheConfig: false, basePath: "");
+
         ConfigureLocalization();
     }
 

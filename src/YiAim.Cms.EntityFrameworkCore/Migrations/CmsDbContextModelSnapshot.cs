@@ -1547,8 +1547,6 @@ namespace YiAim.Cms.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("cms_blog", (string)null);
                 });
 
@@ -1825,13 +1823,6 @@ namespace YiAim.Cms.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("YiAim.Cms.Blogs.Blog", b =>
-                {
-                    b.HasOne("YiAim.Cms.Blogs.Category", null)
-                        .WithMany("Blogs")
-                        .HasForeignKey("CategoryId");
-                });
-
             modelBuilder.Entity("YiAim.Cms.Blogs.TagMap", b =>
                 {
                     b.HasOne("YiAim.Cms.Blogs.Blog", null)
@@ -1890,11 +1881,6 @@ namespace YiAim.Cms.Migrations
             modelBuilder.Entity("YiAim.Cms.Blogs.Blog", b =>
                 {
                     b.Navigation("TagMaps");
-                });
-
-            modelBuilder.Entity("YiAim.Cms.Blogs.Category", b =>
-                {
-                    b.Navigation("Blogs");
                 });
 
             modelBuilder.Entity("YiAim.Cms.Blogs.Tag", b =>

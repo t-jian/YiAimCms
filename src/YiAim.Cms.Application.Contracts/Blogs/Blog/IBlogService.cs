@@ -7,11 +7,9 @@ using Volo.Abp.Application.Services;
 
 namespace YiAim.Cms.Blogs;
 
-public interface IBlogService : IApplicationService
+public interface IBlogService :ICrudAppService<BlogDetailDto, PageBlogDto, int, PagingInput, CreateBlogInput, UpdateBlogInput>
 {
-    #region 用于后台的接口
-    Task Add(AddBlogInput input);
-    Task<PagedList<PageBlogDto>> Page(PagingInput requestDto);
-    #endregion
+
+    Task UpdateTaxis(UpdateBlogCategoryInput input);
 }
 
