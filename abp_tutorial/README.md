@@ -1,10 +1,6 @@
-# abp 搭建个人网站教程
-项目所用到的版本如下
-abp 6.0
-.net 6
-vue2 
+# abp 搭建个人(博客)网站教程
 
-## 1) 初识ABP vNext与项目初建
+## 1) ABP vNext与项目初建
 
 ###### ABP vNext 简介
 ABP vNext（以下简称ABP）的前身是asp.net boilerplate，更多信息请看官网介绍。ABP官网：https://www.abp.io/
