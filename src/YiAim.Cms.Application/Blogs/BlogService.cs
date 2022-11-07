@@ -11,8 +11,11 @@ using System;
 using Volo.Abp;
 using System.Text.Encodings.Web;
 using Volo.Abp.Uow;
+using Microsoft.AspNetCore.Authorization;
 
 namespace YiAim.Cms.Blogs;
+
+[Authorize]
 public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, int, PagingInput, CreateBlogInput, UpdateBlogInput>, IBlogService
 {
     private readonly IRepository<Category, int> _categoryRepository;
@@ -27,6 +30,10 @@ public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, int,
         _tagRepository = tagRepository;
         _tagMapRepository = tagMapRepository;
         _categoryRepository = categoryRepository;
+    }
+    public override Task<PagedResultDto<PageBlogDto>> GetListAsync(PagingInput input)
+    {
+        return base.GetListAsync(input);
     }
     [HttpPost("/api/app/blog/UpdateTaxis")]
     public async Task UpdateTaxis(UpdateBlogCategoryInput input)

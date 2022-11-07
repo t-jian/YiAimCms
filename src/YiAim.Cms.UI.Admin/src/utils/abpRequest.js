@@ -2,8 +2,8 @@ import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 const service = axios.create({
-  baseURL: 'https://localhost:44377', 
-  timeout: 5000 
+  baseURL: 'https://localhost:44377',
+  timeout: 5000
 })
 service.interceptors.request.use(
   config => {
@@ -14,7 +14,7 @@ service.interceptors.request.use(
     return config
   },
   error => {
-    console.log(error,111) 
+    console.log(error, 111)
     return Promise.reject(error)
   }
 )
@@ -24,19 +24,19 @@ service.interceptors.response.use(
     return response.data
   },
   error => {
-    const {status,data}=error.response
-    if(error.response){
-      //针对状态码 400接口请求出错的处理
-      if(status===400){
+    const { status, data } = error.response
+    if (error.response) {
+      // 针对状态码 400接口请求出错的处理
+      if (status === 400) {
         Message({
-          message: data.error_description||data.error,
+          message: data.error_description || data.error,
           type: 'error',
           duration: 5 * 1000
         })
         return Promise.reject(error)
-      } 
+      }
     }
-    if(status===404){
+    if (status === 404) {
       Message({
         message: '接口错误',
         type: 'error',
@@ -47,8 +47,7 @@ service.interceptors.response.use(
     if (error.status === 401) {
       MessageBox.confirm(
         '无权限访问',
-        '确认注销',
-        {
+        '确认注销', {
           confirmButtonText: '重新登录',
           cancelButtonText: '取消',
           type: 'warning'
@@ -65,7 +64,7 @@ service.interceptors.response.use(
     } else {
       message = error.message
     }
-    
+
     Message({
       message: message,
       type: 'error',

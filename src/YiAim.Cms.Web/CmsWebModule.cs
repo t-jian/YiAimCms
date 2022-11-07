@@ -43,6 +43,10 @@ using Microsoft.AspNetCore.Cors;
 using System.Net.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using Swashbuckle.AspNetCore.Filters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace YiAim.Cms.Web;
 
@@ -212,8 +216,40 @@ public class CmsWebModule : AbpModule
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "Cms API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
+
+                var security = new OpenApiSecurityScheme
+                {
+                    Description = "JWT模式授权，请输入 Bearer {Token} 进行身份验证",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey
+                };
+                options.AddSecurityDefinition("JWT", security);
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement { { security, new List<string>() } });
+                options.OperationFilter<AddResponseHeadersFilter>();
+                options.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
+                options.OperationFilter<SecurityRequirementsOperationFilter>();
             }
         );
+        // 身份验证
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+               .AddJwtBearer(options =>
+               {
+                   options.TokenValidationParameters = new TokenValidationParameters
+                   {
+                       ValidateIssuer = true,
+                       ValidateAudience = true,
+                       ValidateLifetime = true,
+                       ClockSkew = TimeSpan.FromSeconds(30),
+                       ValidateIssuerSigningKey = true,
+                       ValidAudience = "https://localhost:44377/",
+                       ValidIssuer = "https://localhost:44377/",
+                       IssuerSigningKey = new SymmetricSecurityKey("H4sIAAAAAAAAA3N0cnZxdXP38PTy9vH18w8I9AkOCQ0".GetBytes())
+                   };
+               });
+
+        // 认证授权
+        services.AddAuthorization();
     }
     private void ConfigureStaticFiles(IApplicationBuilder app)
     {
@@ -250,7 +286,7 @@ public class CmsWebModule : AbpModule
 
         app.UseCorrelationId();
         ConfigureStaticFiles(app);
-       
+
         app.UseRouting();
         app.UseCors(DefaultCorsPolicyName);
         app.UseAuthentication();

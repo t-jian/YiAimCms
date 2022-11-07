@@ -3449,6 +3449,18 @@ proxy: {
 到这里本章就结束了。下章来完成 接口权限，swagger上锁以及第三方登录
 
 
+## 9) 接口权限，swagger上锁以及第三方登录
+
+> 打开swagger访问我们的api可以看到是不用任何验证就能访问，接下来我们就配置接口授权验证，先来看一下abp里面授权验证“授权用于在应用程序中判断是否允许用户执行某些特定的操作.ABP扩展了ASP.NET Core 授权, 将 权限 添加为自动策略并且使授权系统在 应用服务 同样可用.所以ASP.NET Core授权的功能特性和它的文档在基于ABP的应用程序是可用的. ”（https://docs.abp.io/zh-Hans/abp/latest/Authorization）。，来看一实现
+
+![授权验证](../abp_tutorial/images/9.1.png)
+
+![授权验证2](../abp_tutorial/images/9.2.png)
+
+可以看到只需要添加[Authorize]就可以完成简单的授权验证，api在没有获得授权的情况下返回了401，需要授权就能正常调用api
+
+
+
 //对接github、gitee、qq完成多个第三方账号进行登录【多账号统一登录】
 
 
