@@ -47,6 +47,9 @@ using System.Collections.Generic;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Volo.Abp.Http;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace YiAim.Cms.Web;
 
@@ -104,12 +107,43 @@ public class CmsWebModule : AbpModule
         ConfigureLocalizationServices();
         ConfigureNavigationServices();
         ConfigureAutoApiControllers();
-        ConfigureCors(context, configuration);//配置跨域
-        ConfigureSwaggerServices(context.Services);
+        //配置跨域
+        ConfigureCors(context, configuration);
+        ConfigureSwaggerServices(context, configuration);
+
     }
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
-        context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        context.Services.AddAuthentication()
+            .AddJwtBearer(options =>
+            {
+                options.Authority = configuration["AuthServer:Authority"];
+                options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
+                options.Audience = "Cms";
+                options.BackchannelHttpHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                           HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+            });
+    }
+    private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
+    {
+        //context.Services.AddAbpSwaggerGen(options => {
+        //    options.SwaggerDoc("v1", new OpenApiInfo { Title = "忆目内容管理系统 API", Version = "v1" });
+        //    options.DocInclusionPredicate((docName, description) => true);
+        //    options.CustomSchemaIds(type => type.FullName);
+        //});
+        context.Services.AddAbpSwaggerGenWithOAuth(
+              configuration["AuthServer:Authority"],//授权地址，要跟OpenIddict里面的地址一致
+              new Dictionary<string, string>() { { "Cms", "Cms Swagger API" } },//字典第一个是授权的作用域，第二是描述可以随意填写
+              options =>
+              {
+                  options.SwaggerDoc("v1", new OpenApiInfo { Title = "忆目内容管理系统 API", Version = "v1" });
+                  options.DocInclusionPredicate((docName, description) => true);
+                  options.CustomSchemaIds(type => type.FullName);
+              }
+         );
     }
     private void ConfigureCors(ServiceConfigurationContext context, IConfiguration configuration)
     {
@@ -208,49 +242,7 @@ public class CmsWebModule : AbpModule
         });
     }
 
-    private void ConfigureSwaggerServices(IServiceCollection services)
-    {
-        services.AddAbpSwaggerGen(
-            options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Cms API", Version = "v1" });
-                options.DocInclusionPredicate((docName, description) => true);
-                options.CustomSchemaIds(type => type.FullName);
 
-                var security = new OpenApiSecurityScheme
-                {
-                    Description = "JWT模式授权，请输入 Bearer {Token} 进行身份验证",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey
-                };
-                options.AddSecurityDefinition("JWT", security);
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement { { security, new List<string>() } });
-                options.OperationFilter<AddResponseHeadersFilter>();
-                options.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
-                options.OperationFilter<SecurityRequirementsOperationFilter>();
-            }
-        );
-        // 身份验证
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-               .AddJwtBearer(options =>
-               {
-                   options.TokenValidationParameters = new TokenValidationParameters
-                   {
-                       ValidateIssuer = true,
-                       ValidateAudience = true,
-                       ValidateLifetime = true,
-                       ClockSkew = TimeSpan.FromSeconds(30),
-                       ValidateIssuerSigningKey = true,
-                       ValidAudience = "https://localhost:44377/",
-                       ValidIssuer = "https://localhost:44377/",
-                       IssuerSigningKey = new SymmetricSecurityKey("H4sIAAAAAAAAA3N0cnZxdXP38PTy9vH18w8I9AkOCQ0".GetBytes())
-                   };
-               });
-
-        // 认证授权
-        services.AddAuthorization();
-    }
     private void ConfigureStaticFiles(IApplicationBuilder app)
     {
         app.UseStaticFiles();
@@ -290,6 +282,7 @@ public class CmsWebModule : AbpModule
         app.UseRouting();
         app.UseCors(DefaultCorsPolicyName);
         app.UseAuthentication();
+
         app.UseAbpOpenIddictValidation();
 
         if (MultiTenancyConsts.IsEnabled)
@@ -302,8 +295,13 @@ public class CmsWebModule : AbpModule
         app.UseSwagger();
         app.UseAbpSwaggerUI(options =>
         {
-            options.SwaggerEndpoint("/swagger/v1/swagger.json", "Cms API");
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "默认接口");
+            //var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
+            options.OAuthClientId("Cms_Swagger");
+            //options.OAuthClientSecret("1q2w3e*");
+           // options.ConfigObject.AdditionalItems = "ss";
         });
+        
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();

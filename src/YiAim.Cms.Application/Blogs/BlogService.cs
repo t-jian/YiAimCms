@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace YiAim.Cms.Blogs;
 
-[Authorize]
+
 public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, int, PagingInput, CreateBlogInput, UpdateBlogInput>, IBlogService
 {
     private readonly IRepository<Category, int> _categoryRepository;

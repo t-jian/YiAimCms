@@ -8,8 +8,11 @@ using Volo.Abp.Domain.Repositories;
 using System;
 using Volo.Abp;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace YiAim.Cms.Blogs;
+
+[Authorize]
 public class CategoryService : CrudAppService<Category, CategoryDto, int, PagingInput, CreateCategoryInput, EditCategoryInput>, ICategoryService
 {
     public CategoryService(IRepository<Category, int> repository) : base(repository)

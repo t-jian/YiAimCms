@@ -3455,9 +3455,496 @@ proxy: {
 
 可以看到只需要添加[Authorize]就可以完成简单的授权验证，api在没有获得授权的情况下返回了401，需要授权就能正常调用api
 
+- 接下来配置一下 swagger里面关于 OAuth的功能，方便开发调试。
+
+ CmsWebModule里面的ConfigureServices替换`AddSwaggerGen`为`AddAbpSwaggerGenWithOAuth`,这里需要注意的是<font color="red">授权地址和作用域的值,要在`openiddictapplications`表中已经存在的数据</font>。
+
+ ![openiddictapplications](../abp_tutorial/images/9.4.png)
+ appsettings.json
+ ```
+ "AuthServer": {
+    "Authority": "https://localhost:44377",
+    "RequireHttpsMetadata": "false"
+  },
+
+ ```
+ CmsWebModule.cs
+```
+ private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
+    {
+        //context.Services.AddAbpSwaggerGen(options => {
+        //    options.SwaggerDoc("v1", new OpenApiInfo { Title = "忆目内容管理系统 API", Version = "v1" });
+        //    options.DocInclusionPredicate((docName, description) => true);
+        //    options.CustomSchemaIds(type => type.FullName);
+        //});
+        context.Services.AddAbpSwaggerGenWithOAuth(
+              configuration["AuthServer:Authority"],//授权地址，要跟OpenIddict里面的地址一致
+              new Dictionary<string, string>() { { "Cms", "Cms Swagger API" } },//字典第一个是授权的作用域，第二是描述可以随意填写
+              options =>
+              {
+                  options.SwaggerDoc("v1", new OpenApiInfo { Title = "忆目内容管理系统 API", Version = "v1" });
+                  options.DocInclusionPredicate((docName, description) => true);
+                  options.CustomSchemaIds(type => type.FullName);
+              }
+         );
+    }
+
+     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
+    {
+        context.Services.AddAuthentication()
+            .AddJwtBearer(options =>
+            {
+                options.Authority = configuration["AuthServer:Authority"];
+                options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
+                options.Audience = "Cms";
+                options.BackchannelHttpHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                           HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+            });
+    }
+```
+- 在`ConfigureServices`里面将上述两个方法使用，这时swagger授权按钮已经出来了（别忘记在控制添加[Authorize]）。一起来看看效果
+
+![swagger授权按钮已经出来了。一起来看看效果](../abp_tutorial/images/9.5.gif)
+
+在弹出授权框时，我这里"client_id:"已经默认填上，是因为配置了默认值(如下)
+
+```
+ app.UseAbpSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "默认接口");
+            //var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
+            options.OAuthClientId("Cms_Swagger");
+            //options.OAuthClientSecret("1q2w3e*");
+        });
+```
+
+这里有个问题：在swagger里面退出但并没有真正的清除登录信息。发现用户的状态还是登录状态,同时刷新swagger页面时发现授权的状态没有保持。看了几个官方的例子发现他们也是这样使用的，不知道他们的有没有这个问题（https://github.com/abpframework/abp-samples/blob/master/Ids2OpenId/src/Ids2OpenId.HttpApi.Host/Ids2OpenIdHttpApiHostModule.cs）
+目前本人还未有更好的解决办法，暂时想到解决的办法有：
+1. 使用中间件拦截swagger页面，在按钮【logout】直接改成 跳转(/account/logout)，这样也可以清除登录信息。
+2. 使用自定义的登录页面，就是在进入swagger之前先验证。 这样就必须要使用swagger里面自带的授权弹窗。
+
+![swagger里面退出](../abp_tutorial/images/9.6.gif)
+
+swagger上锁、授权先到这里，后面找个更好的办法再来解决。目前这样也不影响使用。
+
+###### 接下来进行第三方的授权登录，这里使用github进行身份认证。(多账户的统一登录)
+
+> 打开GitHub，进入开发者设置界面(https://github.com/settings/developers)，新建一个 oAuth App,把用到的几个参数放在appsettings.json中
+
+![开发者设置界面](../abp_tutorial/images/9.5.png)
+
+```
+"Github": {
+    "ClientID": "7e2099f7bffcb6f7c689",
+    "ClientSecret": "f9f789b275164f606fd557a90a85133715331c19",
+    "RedirectUri": "https://localhost:44377/account/auth",
+    "ApplicationName": "Cms"
+  }
+```
+多账户的统一登录（大家可以看一下这位大佬的文章https://juejin.cn/post/6844904053411938311），这里使用的是建立一个第三方用户表（appUserThirdAuth）用于关联已有的用户表（appUser）
+appUserThirdAuth 表字段如下
+```
+//AuditedEntity加上审计属性
+public class AppUserThirdAuth : AuditedEntity<int>
+{
+    /// <summary>
+    /// 关联用户id
+    /// </summary>
+    public Guid UserId { get; set; }
+
+    /// <summary>
+    /// 第三方用户唯一标识 如openid
+    /// </summary>
+    public string Identifier { get; set; }
+    /// <summary>
+    /// 第三方平台登录类型(手机号/邮箱) 或第三方应用名称 (github/微信/微博等)
+    /// </summary>
+    public IdentityType IdentityType { get; set; }
+
+    public string AccessToken { get; set; }
+
+}
+
+public enum IdentityType
+{
+    github,
+    gitee
+}
+
+```
+大概分析一下，第三方身份认证授权的流程（github为例）
+1. 根据参数生成GitHub重定向的地址，跳转到GitHub登录页进行登录
+2. 登录成功之后会跳转到我们的回调地址，回调地址会携带code参数
+3. 拿到code参数，就可以换取到access_token
+4. 有了access_token，可以调用GitHub获取用户信息的接口
+
+5. 拿到用户信息后
+   - 如果这个用户已经绑定了授权验证（即在AppUserThirdAuth已经有数据）
+   - 如果没用绑定则需要用户进行登录（没有则注册），登录成功时自动绑定当前用户认证的信息
+
+   随后就可以直接调用登录获取token，完成整个登录流程
+
+ 接下来开启代码实站阶段
+   - 先把appsettings.json里面的配置统一读取，注入服务中就可以直接使用实体类
+   在`YiAim.Cms.Domain.Shared`新建Options文件夹，里面存放配置对应的实体，如：AppOptions，代码太多只展示部分
+   ```
+     public class AppOptions
+    {
+        public AuthorizeOptions Authorize { get; set; }
+    }
+    public class AuthorizeOptions
+    {
+        public GithubOptions Github { get; set; }
+    }
+    public class GithubOptions : AuthOptions, IAuthOptions
+{
+    public string AuthorizeUrl => "https://github.com/login/oauth/authorize";
+
+    public string AccessTokenUrl => "https://github.com/login/oauth/access_token";
+
+    public string UserInfoUrl => "https://api.github.com/user";
+}
+public abstract class AuthOptions
+{
+
+    public string ClientId { get; set; }
+    public string ClientSecret { get; set; }
+    public string RedirectUrl { get; set; }
+    public string Scope { get; set; }
+}
+
+   ```
+ - 在CmsDomainSharedModule里面读取配置内容
+   ```
+   // PreConfigureServices里面
+   var configuration = context.Services.GetConfiguration();
+        var authorize = new AuthorizeOptions();
+        PreConfigure<AuthorizeOptions>(options =>
+        {
+            var authorizeOption = configuration.GetSection("authorize");
+            var githubOption = authorizeOption.GetSection("Github");
+            Configure<AuthorizeOptions>(authorizeOption);
+            Configure<GithubOptions>(githubOption);
+            options.Github = new GithubOptions
+            {
+                ClientId = githubOption.GetValue<string>(nameof(options.Github.ClientId)),
+                ClientSecret = githubOption.GetValue<string>(nameof(options.Github.ClientSecret)),
+                RedirectUrl = githubOption.GetValue<string>(nameof(options.Github.RedirectUrl)),
+                Scope = githubOption.GetValue<string>(nameof(options.Github.Scope))
+            };
+            authorize = options;
+        });
+        PreConfigure<AppOptions>(options =>
+        {
+            options.Authorize = authorize;
+            Configure<AppOptions>(item =>
+            {
+                item.Authorize = authorize;
+            });
+        });
+        //ConfigureServices
+      context.Services.ExecutePreConfiguredActions<AuthorizeOptions>();
+   ```
+   需要使用时在构造函数里面注入 IOptions<AuthorizeOptions> Options 即可
+  -   
+- 在`YiAim.Cms.Application.Contracts`新建Authorize文件夹，然后新建IAuthorizeService，IOAuthService
+
+```
+   public interface IAuthorizeService
+    {
+        /// <summary>
+        /// 获取登录地址(GitHub)
+        /// </summary>
+        /// <returns></returns>
+        Task<string> GetAuthorizeUrlAsync(string type);
+        /// <summary>
+        /// 获取AccessToken
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        Task<string> GenerateTokenAsync(string type, string code, string state);
+
+    }
+     public interface IOAuthService<TAccessToke, TUserInfo>
+    {
+        /// <summary>
+        /// 获取登录地址(GitHub)
+        /// </summary>
+        /// <returns></returns>
+        Task<string> GetAuthorizeUrl(string state);
+      
+        /// <summary>
+        /// 获取AccessToken
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        Task<TAccessToke> GetAccessTokenAsync(string code, string state);
+    }
+```
+- 在 YiAim.Cms.Application 里面写实现请求，直接新建Authorize文件夹，新建`StateManager.cs`(状态管理器主要用于控制请求限制)、`ThirdOAuthServiceBase`第三方授权的基础请求服务，后面的第三方授权服务都应继承它，`GithubService`github授权服务，`AuthorizeService`暴露的授权服务，具体看代码实现
+
+StateManager.cs
+```
+ public class StateManager
+    {
+        private static readonly ConcurrentDictionary<string, DateTime> states = new ConcurrentDictionary<string, DateTime>();
+
+        private static StateManager _instance = null;
+
+        private static readonly object lockObj = new object();
+
+        public IGuidGenerator GuidGenerator { get; set; }
+
+        protected StateManager() => GuidGenerator = SimpleGuidGenerator.Instance;
+
+        public static StateManager Instance
+        {
+            get
+            {
+                lock (lockObj)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new StateManager();
+                    }
+                    return _instance;
+                }
+            }
+        }
+
+        public string Get()
+        {
+            var state = GuidGenerator.Create().ToString("N");
+            states.TryAdd(state, DateTime.Now);
+            return state;
+        }
+
+        public static bool IsAny(string state)
+        {
+            if (!states.ContainsKey(state)) return false;
+
+            if (DateTime.Now.Subtract(states[state]).TotalMinutes > 3)
+            {
+                states.TryRemove(state, out _);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static void Remove(string state) => states.TryRemove(state, out _);
+    }
+```
+ThirdOAuthServiceBase.cs
+```
+public abstract class ThirdOAuthServiceBase<TOptions, TAccessToke, TUserInfo> : IOAuthService<TAccessToke, TUserInfo>, ITransientDependency where TOptions : class where TAccessToke : class where TUserInfo : class
+    {
+        protected readonly object ServiceProviderLock = new object();
+        //  public IDistributedCache Cache { get; set; }
+        public IServiceProvider ServiceProvider { get; set; }
+
+        public IOptions<TOptions> Options { get; set; }
 
 
-//对接github、gitee、qq完成多个第三方账号进行登录【多账号统一登录】
+        private IHttpClientFactory _httpClient;
+
+
+        protected IHttpClientFactory HttpClient => LazyGetRequiredService(ref _httpClient);
+
+        protected TService LazyGetRequiredService<TService>(ref TService reference)
+        {
+            return LazyGetRequiredService(typeof(TService), ref reference);
+        }
+
+        protected TRef LazyGetRequiredService<TRef>(Type serviceType, ref TRef reference)
+        {
+            if (reference == null)
+            {
+                lock (ServiceProviderLock)
+                {
+                    if (reference == null)
+                    {
+                        reference = (TRef)ServiceProvider.GetRequiredService(serviceType);
+                    }
+                }
+            }
+
+            return reference;
+        }
+        /// <summary>
+        /// 获取授权地址
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public virtual async Task<string> GetAuthorizeUrl(string state)
+        {
+            var param = BuildAuthorizeUrlParams(state);
+            IAuthOptions authOptions = Options.Value as IAuthOptions;
+            var url = $"{authOptions.AuthorizeUrl}?{param.ToQueryString()}";
+            return await Task.FromResult(url);
+        }
+        /// <summary>
+        /// 根据授权信息获取用户信息
+        /// </summary>
+        /// <param name="type">授权类型</param>
+        /// <param name="code"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public virtual async Task<TUserInfo> GetUserByOAuthAsync(string type, string code, string state)
+        {
+            var accessToken = await GetAccessTokenAsync(code, state);
+            var curAccessToken = accessToken as AccessTokenBase;
+            return await GetUserInfoAsync(curAccessToken.AccessToken);
+        }
+        /// <summary>
+        /// 获取授权的access token
+        /// </summary>
+        /// <param name="code">code</param>
+        /// <param name="state">state</param>
+        /// <returns></returns>
+        public virtual async Task<TAccessToke> GetAccessTokenAsync(string code, string state)
+        {
+            var param = BuildAccessTokenParams(code, state);
+            var content = new StringContent(param.ToQueryString());
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            using var client = HttpClient.CreateClient();
+            IAuthOptions authOptions = Options.Value as IAuthOptions;
+            var httpResponse = await client.PostAsync(authOptions.AccessTokenUrl, content);
+            var response = await httpResponse.Content.ReadAsStringAsync();
+            try
+            {
+                return JsonConvert.DeserializeObject<TAccessToke>(response);
+            }
+            catch
+            {
+                var qscoll = HttpUtility.ParseQueryString(response);
+                var aa = new AccessTokenBase
+                {
+                    AccessToken = qscoll["access_token"],
+                    Scope = qscoll["scope"],
+                    TokenType = qscoll["token_type"],
+                    ExpiresIn = 84000
+                };
+                return aa as TAccessToke;
+            }
+        }
+        /// <summary>
+        ///根据access token 获取授权的用户信息
+        /// </summary>
+        /// <param name="accessToken"></param>
+        /// <returns></returns>
+        public virtual async Task<TUserInfo> GetUserInfoAsync(string accessToken)
+        {
+            using var client = HttpClient.CreateClient();
+            client.DefaultRequestHeaders.Add("Authorization", $"token {accessToken}");
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36 Edg/87.0.664.66");
+            IAuthOptions authOptions = Options.Value as IAuthOptions;
+            var response = await client.GetStringAsync(authOptions.UserInfoUrl);
+            return JsonConvert.DeserializeObject<TUserInfo>(response);
+        }
+        //构建授权url
+        public virtual Dictionary<string, string> BuildAuthorizeUrlParams(string state) => throw new NotImplementedException();
+        //构建获取access token 参数
+        public virtual Dictionary<string, string> BuildAccessTokenParams(string code, string state) => throw new NotImplementedException();
+
+    }
+```
+GithubService.cs
+```
+ public class GithubService : ThirdOAuthServiceBase<GithubOptions, AccessTokenBase, dynamic>
+    {
+        public override Dictionary<string, string> BuildAuthorizeUrlParams(string state)
+        {
+            return new Dictionary<string, string>
+            {
+                ["client_id"] = Options.Value.ClientId,
+                ["redirect_uri"] = Options.Value.RedirectUrl,
+                ["scope"] = Options.Value.Scope,
+                ["state"] = state
+            };
+        }
+
+        public override Dictionary<string, string> BuildAccessTokenParams(string code, string state)
+        {
+            return new Dictionary<string, string>()
+            {
+                ["client_id"] = Options.Value.ClientId,
+                ["client_secret"] = Options.Value.ClientSecret,
+                ["redirect_uri"] = Options.Value.RedirectUrl,
+                ["code"] = code,
+                ["state"] = state
+            };
+        }
+
+    }
+```
+AuthorizeService.cs
+```
+ public class AuthorizeService : ApplicationService, IAuthorizeService
+    {
+        private readonly GithubService _githubService;
+        private readonly ILogger _logger;
+        public AuthorizeService(GithubService githubService, ILogger<AuthorizeService> logger)
+        {
+            _githubService = githubService;
+            _logger = logger;
+        }
+        /// <summary>
+        /// 获取授权成功后token 
+        /// 流程
+        /// 1、拿到code、state  换取access_token, 
+        /// 2、根据access_token 换取用户相关信息
+        /// 3、根据用户唯一信息换取用户表的相关信息
+        /// 4、根据用户信息生成token
+        /// </summary>
+        /// <param name="type">授权类型 github\gitee</param>
+        /// <param name="code">授权码</param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("oauth/{type}/token")]
+        public async Task<string> GenerateTokenAsync(string type, string code, string state)
+        {
+            if (!StateManager.IsAny(state))
+                throw new Exception("请求失败");
+            StateManager.Remove(state);
+            var result = type switch
+            {
+                "github" => await _githubService.GetUserByOAuthAsync(type, code, state),
+                _ => throw new NotImplementedException($"Not implemented:{type}")
+            };
+            return "";
+        }
+
+        /// <summary>
+        /// 获取授权链接
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("oauth/{type}")]
+        public async Task<string> GetAuthorizeUrlAsync(string type)
+        {
+            var state = StateManager.Instance.Get();
+            string url = type switch
+            {
+                "github" => await _githubService.GetAuthorizeUrl(state),
+                _ => throw new NotImplementedException($"Not implemented:{type}")
+            };
+            return url;
+        }
+    }
+```
+
+
+
+
+
 
 
 

@@ -12,6 +12,9 @@ using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.Validation.Localization;
 using Volo.Abp.VirtualFileSystem;
+using YiAim.Cms.Options;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace YiAim.Cms;
 
@@ -31,6 +34,31 @@ namespace YiAim.Cms;
     {
         CmsGlobalFeatureConfigurator.Configure();
         CmsModuleExtensionConfigurator.Configure();
+        var configuration = context.Services.GetConfiguration();
+        var authorize = new AuthorizeOptions();
+        PreConfigure<AuthorizeOptions>(options =>
+        {
+            var authorizeOption = configuration.GetSection("authorize");
+            var githubOption = authorizeOption.GetSection("Github");
+            Configure<AuthorizeOptions>(authorizeOption);
+            Configure<GithubOptions>(githubOption);
+            options.Github = new GithubOptions
+            {
+                ClientId = githubOption.GetValue<string>(nameof(options.Github.ClientId)),
+                ClientSecret = githubOption.GetValue<string>(nameof(options.Github.ClientSecret)),
+                RedirectUrl = githubOption.GetValue<string>(nameof(options.Github.RedirectUrl)),
+                Scope = githubOption.GetValue<string>(nameof(options.Github.Scope))
+            };
+            authorize = options;
+        });
+        PreConfigure<AppOptions>(options =>
+        {
+            options.Authorize = authorize;
+            Configure<AppOptions>(item =>
+            {
+                item.Authorize = authorize;
+            });
+        });
     }
 
     public override void ConfigureServices(ServiceConfigurationContext context)
@@ -54,5 +82,6 @@ namespace YiAim.Cms;
         {
             options.MapCodeNamespace("Cms", typeof(CmsResource));
         });
+        context.Services.ExecutePreConfiguredActions<AuthorizeOptions>();
     }
 }
