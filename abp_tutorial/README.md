@@ -3447,8 +3447,10 @@ proxy: {
 
 ## 9) 接口权限，swagger上锁以及第三方登录
 
-> 打开swagger访问我们的api可以看到是不用任何验证就能访问，接下来我们就配置接口授权验证，先来看一下abp里面授权验证“授权用于在应用程序中判断是否允许用户执行某些特定的操作.ABP扩展了ASP.NET Core 授权, 将 权限 添加为自动策略并且使授权系统在 应用服务 同样可用.所以ASP.NET Core授权的功能特性和它的文档在基于ABP的应用程序是可用的. ”（https://docs.abp.io/zh-Hans/abp/latest/Authorization）。，来看一实现
+> 打开swagger,任意访问api,可以看到不用任何验证就能访问。对于绝大部系统而言这都是一个致命的问题。接下来我们就配置接口授权验证，先来看一下abp里面授权验证
+>>“授权用于在应用程序中判断是否允许用户执行某些特定的操作.ABP扩展了ASP.NET Core 授权, 将 权限 添加为自动策略并且使授权系统在 应用服务 同样可用.所以ASP.NET Core授权的功能特性和它的文档在基于ABP的应用程序是可用的. ”（https://docs.abp.io/zh-Hans/abp/latest/Authorization）
 
+先来看一实现
 ![授权验证](../abp_tutorial/images/9.1.png)
 
 ![授权验证2](../abp_tutorial/images/9.2.png)
