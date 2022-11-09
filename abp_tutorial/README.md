@@ -3687,7 +3687,7 @@ public abstract class AuthOptions
     }
 ```
 - 在 YiAim.Cms.Application 里面写实现请求，直接新建Authorize文件夹，新建`StateManager.cs`(状态管理器主要用于控制请求限制)、`ThirdOAuthServiceBase`第三方授权的基础请求服务，后面的第三方授权服务都应继承它，`GithubService`github授权服务，`AuthorizeService`暴露的授权服务，具体看代码实现
-
+> 这里涉及到http请求,在构造函数中依赖注入IHttpClientFactory，在 `ConfigureServices`里配置 `context.Services.AddHttpClient()`。使用IHttpClientFactory创建HttpClient
 StateManager.cs
 ```
  public class StateManager
@@ -3940,6 +3940,19 @@ AuthorizeService.cs
         }
     }
 ```
+
+运行项目打开swagger就会看到 多了Authorize
+
+![authorize](../abp_tutorial/images/9.7.png)
+
+测试"{type}输入github,因为我们这里支持多平台的授权认证，目前仅实现github
+ 1. 先调用`/oauth/github`拿到授权链接
+ 2. 访问授权链接到github授权服务器拿到code,state参数，就可以进行获取access token.可以看到`https://localhost:44377/account/auth?code=71757f3b53404b820602&state=dfaf1ddd4cff400ca0df41c194bc8871` 这个地址是没有办法跳转过来的，因为这个地址还不存在，先手动将参数拿到
+ 3. 将参数放到 `/oauth/{type}/token` 里进行请求就可以获得token (演示这里没有数据是我接口返回的问题，后面会根据实际场景调整这些接口)
+![测试结果](../abp_tutorial/images/9.8.gif)
+
+有了第三方的用户信息就可以进行我们的授权认证逻辑处理（见：第三方身份认证授权的流程），到此需要第三方授权认证的关键实现逻辑已经实现的差不多了。
+由于篇幅太长，本章就到此结束。下章将继续补充完整第三方授权登录的功能
 
 
 

@@ -110,6 +110,7 @@ public class CmsWebModule : AbpModule
         //配置跨域
         ConfigureCors(context, configuration);
         ConfigureSwaggerServices(context, configuration);
+        context.Services.AddHttpClient();
 
     }
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)

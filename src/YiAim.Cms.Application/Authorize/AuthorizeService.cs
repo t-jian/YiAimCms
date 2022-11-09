@@ -41,7 +41,7 @@ namespace YiAim.Cms.Authorize
         /// <returns></returns>
         [HttpGet]
         [Route("oauth/{type}/token")]
-        public async Task<string> GenerateTokenAsync(string type, string code, string state)
+        public async Task<dynamic> GenerateTokenAsync(string type, string code, string state)
         {
             if (!StateManager.IsAny(state))
                 throw new Exception("请求失败");
@@ -51,7 +51,7 @@ namespace YiAim.Cms.Authorize
                 "github" => await _githubService.GetUserByOAuthAsync(type, code, state),
                 _ => throw new NotImplementedException($"Not implemented:{type}")
             };
-            return "";
+            return result;
         }
 
         /// <summary>

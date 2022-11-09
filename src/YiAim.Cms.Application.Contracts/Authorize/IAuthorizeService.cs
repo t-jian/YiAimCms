@@ -18,8 +18,7 @@ namespace YiAim.Cms.Authorize
         /// <param name="code"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        Task<string> GenerateTokenAsync(string type, string code, string state);
-
+        Task<dynamic> GenerateTokenAsync(string type, string code, string state);
 
     }
 }
