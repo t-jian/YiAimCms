@@ -36,19 +36,9 @@ const mutations = {
 }
 
 const actions = {
-  login({ commit }, userInfo) {
-    const { username, password } = userInfo
+  login({ commit }, args) {
     return new Promise((resolve, reject) => {
-      const clientSetting = {
-        grant_type: "password",
-        scope: "Cms",
-        username: username.trim(),
-        password: password,
-        client_id: "Cms_App",
-        client_secret: ""
-      }
-      clientSetting.password="1q2w3E*"
-      login(clientSetting).then(response => {
+      login(args).then(response => {
         const token=response.access_token
         commit("SET_TOKEN", token);
         setToken(token).then(()=>{

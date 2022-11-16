@@ -4,7 +4,7 @@ import qs from 'querystring'
 
 export function login(data) {
   return request({
-    url: '/connect/token',
+    url: '/ym/connect/token',
     method: 'post',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     data: qs.stringify(data)

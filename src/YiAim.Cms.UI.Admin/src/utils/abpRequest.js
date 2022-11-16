@@ -3,7 +3,7 @@ import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 const service = axios.create({
   baseURL: 'https://localhost:44377',
-  timeout: 5000
+  timeout: 30000
 })
 service.interceptors.request.use(
   config => {
@@ -14,7 +14,6 @@ service.interceptors.request.use(
     return config
   },
   error => {
-    console.log(error, 111)
     return Promise.reject(error)
   }
 )
@@ -24,6 +23,14 @@ service.interceptors.response.use(
     return response.data
   },
   error => {
+    if(error.toString().indexOf('timeout')>-1){
+      Message({
+        message: error.response,
+        type: 'error',
+        duration: 5 * 1000
+      })
+      return Promise.reject(error)
+    }
     const { status, data } = error.response
     if (error.response) {
       // 针对状态码 400接口请求出错的处理

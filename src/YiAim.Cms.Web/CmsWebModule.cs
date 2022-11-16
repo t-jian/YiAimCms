@@ -1,6 +1,5 @@
 using System.IO;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,31 +9,24 @@ using YiAim.Cms.Localization;
 using YiAim.Cms.MultiTenancy;
 using YiAim.Cms.Web.Menus;
 using Microsoft.OpenApi.Models;
-using OpenIddict.Validation.AspNetCore;
 using Volo.Abp;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.Localization;
-using Volo.Abp.AspNetCore.Mvc.UI;
-using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
-using Volo.Abp.AspNetCore.Mvc.UI.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
 using Volo.Abp.AutoMapper;
-using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity.Web;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
-using Volo.Abp.PermissionManagement.Web;
 using Volo.Abp.SettingManagement.Web;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.TenantManagement.Web;
 using Volo.Abp.UI.Navigation.Urls;
-using Volo.Abp.UI;
 using Volo.Abp.UI.Navigation;
 using Volo.Abp.VirtualFileSystem;
 using System;
@@ -44,12 +36,8 @@ using System.Net.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
-using Swashbuckle.AspNetCore.Filters;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Volo.Abp.Http;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using OpenIddict.Server;
+using System.Threading.Tasks;
 
 namespace YiAim.Cms.Web;
 
@@ -90,7 +78,9 @@ public class CmsWebModule : AbpModule
                 options.AddAudiences("Cms");
                 options.UseLocalServer();
                 options.UseAspNetCore();
+
             });
+
         });
     }
 
@@ -112,6 +102,12 @@ public class CmsWebModule : AbpModule
         ConfigureSwaggerServices(context, configuration);
         context.Services.AddHttpClient();
 
+        context.Services.AddOpenIddict()
+            .AddServer(option =>
+            {
+                option.AllowCustomFlow(GlobalConstant.OpeniddictGrantType_ThirdAuth);
+                option.SetTokenEndpointUris(new[] { "/ym/connect/token" });
+            });
     }
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
@@ -121,20 +117,19 @@ public class CmsWebModule : AbpModule
                 options.Authority = configuration["AuthServer:Authority"];
                 options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
                 options.Audience = "Cms";
+                options.SaveToken = true;
                 options.BackchannelHttpHandler = new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback =
                            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 };
             });
+
+
     }
     private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
     {
-        //context.Services.AddAbpSwaggerGen(options => {
-        //    options.SwaggerDoc("v1", new OpenApiInfo { Title = "忆目内容管理系统 API", Version = "v1" });
-        //    options.DocInclusionPredicate((docName, description) => true);
-        //    options.CustomSchemaIds(type => type.FullName);
-        //});
+
         context.Services.AddAbpSwaggerGenWithOAuth(
               configuration["AuthServer:Authority"],//授权地址，要跟OpenIddict里面的地址一致
               new Dictionary<string, string>() { { "Cms", "Cms Swagger API" } },//字典第一个是授权的作用域，第二是描述可以随意填写
@@ -300,9 +295,9 @@ public class CmsWebModule : AbpModule
             //var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
             options.OAuthClientId("Cms_Swagger");
             //options.OAuthClientSecret("1q2w3e*");
-           // options.ConfigObject.AdditionalItems = "ss";
+            // options.ConfigObject.AdditionalItems = "ss";
         });
-        
+
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();

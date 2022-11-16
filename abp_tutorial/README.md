@@ -3552,6 +3552,7 @@ appUserThirdAuth 表字段如下
 //AuditedEntity加上审计属性
 public class AppUserThirdAuth : AuditedEntity<int>
 {
+    [NotNull]
     /// <summary>
     /// 关联用户id
     /// </summary>
@@ -3560,13 +3561,29 @@ public class AppUserThirdAuth : AuditedEntity<int>
     /// <summary>
     /// 第三方用户唯一标识 如openid
     /// </summary>
+    [NotNull]
+    [MaxLength(50)]
     public string Identifier { get; set; }
     /// <summary>
     /// 第三方平台登录类型(手机号/邮箱) 或第三方应用名称 (github/微信/微博等)
     /// </summary>
+    [NotNull]
+    [MaxLength(50)]
     public IdentityType IdentityType { get; set; }
 
+    [MaxLength(50)]
     public string AccessToken { get; set; }
+    /// <summary>
+    /// 头像
+    /// </summary>
+    [MaxLength(255)]
+    public string Avatar { get; set; }
+
+    /// <summary>
+    /// 昵称
+    /// </summary>
+    [MaxLength(150)]
+    public string NickName { get; set; }
 
 }
 
@@ -3577,7 +3594,7 @@ public enum IdentityType
 }
 
 ```
-大概分析一下，第三方身份认证授权的流程（github为例）
+大概分析一下，第三方身份认证授权的流程（github为例，可参考官方文档 https://docs.github.com/cn/rest/apps/oauth-applications#check-a-token ）
 1. 根据参数生成GitHub重定向的地址，跳转到GitHub登录页进行登录
 2. 登录成功之后会跳转到我们的回调地址，回调地址会携带code参数
 3. 拿到code参数，就可以换取到access_token
@@ -3956,7 +3973,416 @@ AuthorizeService.cs
 有了第三方的用户信息就可以进行我们的授权认证逻辑处理（见：第三方身份认证授权的流程），到此需要第三方授权认证的关键实现逻辑已经实现的差不多了。
 由于篇幅太长，本章就到此结束。下章将继续补充完整第三方授权登录的功能
 
+## 10）ABP实现集成openiddict的第三方授权登录（github）&UI授权登录
 
+上章我们已经可以请求获取到了授权用户的信息，只不过没有把信息暂存到实体中。
+
+由于我们是多平台的授权登录，每个平台之间返回的数据类型有所差异，所有这里统一定义了我需要的核心数据 `AuthUserBaseInfo`，同时平台之间返回的字段差异需要有地方映射 `AuthUserBaseInfo`里面字段，进而定义了 `IAuthUserInfoFieldMap`的 FieldMap（）方法， 代码如下：
+
+在 `YiAim.Cms.Application.Contracts`里面新建
+```
+ public interface IAccessToken
+    {
+        string AccessToken { get; set; }
+    }
+    public interface IAuthUserInfoFieldMap
+    {
+        /// <summary>
+        /// 字段映射成 AuthUserBaseInfo 对象里面的属性
+        /// </summary>
+        /// <returns></returns>
+        AuthUserBaseInfo FieldMap();
+    }
+    /// <summary>
+    /// 定义授权返回的基本数据
+    /// 最终所有第三方授权信息都必须映射成功该实体类
+    /// </summary>
+    public class AuthUserBaseInfo: IAccessToken
+    {
+        /// <summary>
+        /// 唯一标识，不能为空
+        /// </summary>
+        [JsonProperty("id")]
+        public virtual string Id { get; set; }
+        /// <summary>
+        /// 用户名
+        /// </summary>
+        [JsonProperty("username")]
+        public virtual string UserName { get; set; }
+        /// <summary>
+        /// 昵称
+        /// </summary>
+        [JsonProperty("nickname")]
+        public virtual string NickName { get; set; }
+        /// <summary>
+        /// 头像
+        /// </summary>
+        [JsonProperty("avatar_url")]
+        public virtual string Avatar { get; set; }
+
+        public virtual string AccessToken { get; set; }
+
+    }
+```
+github通过授权获取的用户信息转换成功`GithubAuthDto`
+
+> 可以看到github里面返回的没有是login字段，没有UserName，所有这里我将login赋值给UserName。同时在FieldMap里面赋值给了NickName（因为在github里面返回没有找到合适的字段）
+
+
+```
+//这里定义的字段需要跟平台返回的字段一致
+  public class GithubAuthDto : AuthUserBaseInfo, IAuthUserInfoFieldMap
+    {
+        [JsonProperty("login")]
+        public override string UserName { get; set; }
+
+        public AuthUserBaseInfo FieldMap()
+        {
+            this.NickName = this.UserName;
+            return this;
+        }
+    }
+```
+在 `YiAim.Cms.Application` 里面的 `GithubService` 修改返回类型
+
+```
+  public class GithubService : ThirdOAuthServiceBase<GithubOptions, AccessTokenBase, GithubAuthDto>{}
+```
+在 ThirdOAuthServiceBase 抽象类里面的 `GetUserByOAuthAsync`方法为`AccessToken`属性赋值
+```
+    public virtual async Task<TUserInfo> GetUserByOAuthAsync(string type, string code, string state)
+        {
+            var accessToken = await GetAccessTokenAsync(code, state);
+            var curAccessToken = accessToken as AccessTokenBase;
+            var res = (await GetUserInfoAsync(curAccessToken.AccessToken)) as IAccessToken;
+            res.AccessToken = curAccessToken.AccessToken;
+            return res as TUserInfo;
+        }
+```
+在`AuthorizeService`里面，实现了IAuthorizeService相关的接口,最后返回用户信息时一定要调用`FieldMap()`，统一映射`AuthUserBaseInfo`对象
+
+```
+ public interface IAuthorizeService
+    {
+        /// <summary>
+        /// 获取登录地址(GitHub)
+        /// </summary>
+        /// <returns></returns>
+        Task<string> GetAuthorizeUrlAsync(string type);
+        /// <summary>
+        /// 获取授权用户信息
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        Task<AuthUserBaseInfo> GetAuthUserInfo(string type, string code, string state);
+
+        /// <summary>
+        /// 获取AccessToken
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        Task<string> GetTokenAsync(string type, string code, string state);
+    }
+``` 
+AuthorizeService.cs
+
+```
+   [HttpGet]
+        [Route("oauth/{type}/GetAuthUserInfo")]
+        public async Task<AuthUserBaseInfo> GetAuthUserInfo(string type, string code, string state)
+        {
+            if (!StateManager.IsAny(state))
+                throw new UserFriendlyException("请求过期");
+            StateManager.Remove(state);
+            try
+            {
+                var result = type switch
+                {
+                    "github" => await _githubService.GetUserByOAuthAsync(type, code, state),
+                    _ => throw new UserFriendlyException($"Not implemented:{type}")
+                };
+                return result.FieldMap();
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException(ex.Message);
+            }
+        }
+```
+实现的效果
+
+![实现的效果](./images/10.1.gif)
+
+接下来进行数据迁移生成第三方授权表`AppUserThirdAuth`,同时将curd的方法补齐。
+
+切到vue项目里面
+
+1. 先把登录页面的第三方授权登录入口加入
+![第三方授权登录入口加入](./images/10.2.png)
+
+```
+    <el-tooltip content="使用Github进行登录" placement="top">
+          <span @click="openAuth('github')" >github </span>
+    </el-tooltip>
+
+```
+2. 在src\identity里新建auth.js
+
+auth.js
+```
+import request from '@/utils/abpRequest'
+
+export function getAuthUrl(type) {
+    return request({
+        url: `/oauth/${type}`,
+        method: 'get',
+        headers: { 'Content-Type': 'application/json' },
+    })
+}
+
+```
+
+
+3. 去到github里面将跳转回调地址改成 `http://localhost:9527/#auth-redirect` 跳转回到vue项目里面，同时不要忘记看看vue里面对应的路由是否存在，不存在则补上;`permission.js`里面要将auth-redirect放到whiteList数组里面解除验证。
+
+![github跳转回调](./images/10.3.png)
+
+4.修改登录流程，通过openiddict的`/connect/token`完成第三方授权同时返回token
+
+本来我是想像`identityServer`那样简单配置扩展登录项就可以了，事实证明我还是太年轻了。
+先来看一下IdentityServer4通过`/connect/token`获取token
+> IdentityServer4通过GrantType来区分不同的授权方式，除了常规的授权方式之外，在defaut条件中，有自定义授权生成token的方式（ProcessExtensionGrantRequestAsync），可以通过这种方式集成其他方式验证比如:微信登陆、短信登陆等等;
+
+简单实现如下：1、自定义授权实现继承`IExtensionGrantValidator`并实现ValidateAsync方法 2、添加扩展方法 3、种子数据添加grantTypes
+
+核心代码如下
+
+```
+public class ExtensionGrantTypes
+  {
+   public const string WeChatQrCodeGrantType = "WeChat";
+    }
+    public class WeChatQrCodeGrantValidator : IExtensionGrantValidator
+    {
+        public string GrantType => ExtensionGrantTypes.WeChatQrCodeGrantType;
+        private readonly UserManager<Volo.Abp.Identity.IdentityUser> _userManager;
+        public WeChatQrCodeGrantValidator(UserManager<Volo.Abp.Identity.IdentityUser> userLoginManager)
+        {
+            _userManager = userLoginManager;
+        }
+        public async Task ValidateAsync(ExtensionGrantValidationContext context)
+        {
+            string code = context.Request.Raw.Get("Code");
+           \\业务逻辑
+        }
+    }
+```
+在配置中注入扩展方法
+```
+public override void PreConfigureServices(ServiceConfigurationContext context)
+{
+    context.Services.PreConfigure<IIdentityServerBuilder>(builder => { 
+        builder.AddExtensionGrantValidator<WeChatQrCodeGrantValidator>(); 
+    });
+}
+```
+添加种子数据
+```
+await CreateClientAsync(
+    name: "wechat-web",
+    scopes: commonScopes.Union(new[] {
+         "IdentityService",,"WeChat"
+    }),
+    grantTypes: new[] { "WeChat" },//跟WeChatQrCodeGrantType保持一致
+    requireClientSecret: false
+);
+```
+通过上述方法就可以实现IdentityServer4的扩展登录，那么openiddict应该也支持扩展方式实现，在查看`openiddict`文档(https://documentation.openiddict.com/),我是没有找到类似IdentityServer4扩展方法。openiddict默认实现了五种获取token的方式。在文档中没有找到只能去看看一下源码，在abp源码里面打开openiddict的源码，发现确实是支持扩展的方式。
+![openiddict的源码](./images/10.4.png)
+
+兴奋了一小会~ 开干，按照IdentityServer方式继续`ITokenExtensionGrant`实现一个类似。调试的时候发现都不触发，我是这样注入
+```
+ PreConfigure<OpenIddictServerBuilder>(builder =>{builder.AddEventHandler(ValidatePromptParameterA.Descriptor);});
+```
+也许是我的实现或者注入的方式错了，反正搞了两天尝试Google、百度搞了N种方式，最后直接放弃该方法。最后想直接修改源代码不是来得更简单，回到openiddict源码中发现<font color="red"> `TokenController`是个部分类同时`HandleAsync`是个虚拟方法允许重写</font>。
+在stackoverflow里面还发现别人很多年前使用Google Auth with OpenIdDictServer实现方式可以借鉴一下（https://stackoverflow.com/questions/41223694/rich-twitter-digits-google-auth-with-openiddictserver） 
+
+在YiAim.Cms.HttpApi里的Controllers新建YiAimTokenController，继承TokenController以保留原有的功能
+```
+//引用 Volo.Abp.Account.Web.OpenIddict包
+namespace YiAim.Cms.Controllers;
+[Route("/connect/token2")]
+public class YiAimTokenController : TokenController
+{
+    public override async Task<IActionResult> HandleAsync()
+    {
+        var request = await GetOpenIddictServerRequestAsync(HttpContext);
+        //var vv = HttpContext.Items.Values;
+        //var v1 = HttpContext.Request.Form;
+        if (request.GrantType.Equals("third_auth"))
+        {
+            //处理业务逻辑
+            IdentityUser user = null;
+            return await SetSuccessResultAsync(request, user);
+        }
+        else
+        {
+            return await base.HandleAsync();
+        }
+        
+    }
+}
+```
+这里要将路由重写不能使用原路由`/connect/token`，就算你将路由的order=-1一样不行。路由重写之后还需要 (CmsWebModule) ` ConfigureServices(ServiceConfigurationContext context)`方法里面配置如下
+
+```
+ context.Services.AddOpenIddict()
+            .AddServer(option => {
+                option.AllowCustomFlow("third_auth");//添加特定GrantType
+                option.SetTokenEndpointUris(new[] { "/connect/token2" });
+            });
+```
+SetTokenEndpointUri一定设置跟路由对应的，不然会出现错误`An OpenID Connect response cannot be returned from this endpoint`,我在stackoverflow得到解释：
+<strong> OpenIddict 配置了/connect/token作为令牌端点地址，如果地址与注册端点路径不同，OpenIddict不处理该请求并拒绝将其视为令牌请求</strong>
+详情见(https://stackoverflow.com/questions/42048770/asp-net-core-openiddict-throws-an-openid-connect-response-cannot-be-returned-fr)
+
+下面是我项目实现的逻辑代码，其他更多方式可以OpenIddict源码里面token的实现
+```
+[Route("/ym/connect/token")]
+public class YiAimTokenController : TokenController
+{
+    private readonly IAuthorizeService _authorizeService;
+    private readonly IRepository<AppUserThirdAuth, int> _appUserThirdAuth;
+    public YiAimTokenController(IAuthorizeService authorizeService, IRepository<AppUserThirdAuth, int> appUserThirdAuth)
+    {
+        _authorizeService = authorizeService;
+        _appUserThirdAuth = appUserThirdAuth;
+    }
+    public override async Task<IActionResult> HandleAsync()
+    {
+        var request = await GetOpenIddictServerRequestAsync(HttpContext);
+
+        if (request.GrantType.Equals(GlobalConstant.OpeniddictGrantType_ThirdAuth))
+        {
+            var form = HttpContext.Request.Form;
+            string type = form["type"];
+            string code = request.Code;
+            string state = request.State;
+            if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(state) || string.IsNullOrWhiteSpace(type))
+            {
+                return Forbid(GetAuthenticationProperties($"参数异常"), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            }
+            var userInfo = await _authorizeService.GetAuthUserInfo(type, code, state);
+            if (userInfo is null)
+            {
+                return Forbid(GetAuthenticationProperties($"获取{type}授权信息异常，请重试！"), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            }
+            IdentityType identityType = (IdentityType)Enum.Parse(typeof(IdentityType), type);
+            if (!await _appUserThirdAuth.AnyAsync(n => n.Identifier == userInfo.Id && n.IdentityType == identityType))
+            {
+                return Forbid(GetAuthenticationProperties($"未绑定{type}"), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            }
+            var appUserThirdAut = await _appUserThirdAuth.FindAsync(n => n.Identifier == userInfo.Id && n.IdentityType == identityType);
+            IdentityUser user = await UserManager.GetByIdAsync(appUserThirdAut.UserId);
+            if (user is null)
+            {
+                return Forbid(GetAuthenticationProperties($"绑定用户不存在"), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            }
+            //设置用户登录
+            await SignInManager.SignInAsync(user, isPersistent: false);
+            return await SetSuccessResultAsync(request, user);
+        }
+        else
+        {
+            return await base.HandleAsync();
+        }
+    }
+    private AuthenticationProperties GetAuthenticationProperties(string msg)
+    {
+        return new AuthenticationProperties(new Dictionary<string, string>
+        {
+            [OpenIddictServerAspNetCoreConstants.Properties.Error] = OpenIddictConstants.Errors.InvalidRequest,
+            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = msg
+        });
+    }
+}
+//ConfigureServices里面
+ context.Services.AddOpenIddict()
+  .AddServer(option =>
+     {
+        option.AllowCustomFlow(GlobalConstant.OpeniddictGrantType_ThirdAuth);
+        option.SetTokenEndpointUris(new[] { "/ym/connect/token" });
+     });
+```
+5. 回到vue里面把登录页面（src\views\index.vue）和src\store\user.js优化一下，
+index.vue里面账户密码登录和第三方授权登录都统一采用`this.$store.dispatch("user/login", clientSetting)`实现，store\user.js里面直接传参数进入。
+```
+//index.vue
+afterQRScan(e) {
+      if (e.key === "x-admin-oauth-code") {
+        this.loading = true;
+        let codeState = e.newValue.split('&');
+        let type = e.storageArea.authtype;
+        let clientSetting = {
+          grant_type: "third_auth",
+          scope: "Cms",
+          code: codeState[0].split('=')[1],
+          state:codeState[1].split('=')[1],
+          client_id: "third_auth",
+          type:type,
+          client_secret: ""
+      }
+        console.log(clientSetting,555)
+        this.$store.dispatch("user/login", clientSetting)
+            .then(() => {
+              this.$router.push({
+                path: this.redirect || "/",
+                query: this.otherQuery,
+              });
+              this.loading = false;
+            })
+            .catch(() => {
+              this.loading = false;
+            });
+      }
+      //user.js
+      const actions = {
+      login({ commit }, args) {
+        return new Promise((resolve, reject) => {
+          login(args).then(response => {
+            const token=response.access_token
+            commit("SET_TOKEN", token);
+            setToken(token).then(()=>{
+              resolve()
+            })
+            
+          }).catch(error => {
+            reject(error)
+          })
+        })
+      },
+      }
+```
+
+6. 最后来测试一下
+
+ > 测试前先要在`openiddictapplications`表中添加授权数据,可以直接在表中添加也可使用数据迁移方式添加
+ ![数据迁移方式添加](./images/10.6.png)
+ ![直接在表中添加](./images/10.7.png)
+
+运行项目测试，可以看到直接提示为绑定xxx。这个结果就是正确的预期，因为第三方授权表里没有数据。第三方授权表的数据可以给定一个绑定界面从绑定界面写入绑定关系即可，这里就不实现了。
+
+![运行项目测试，可以看到直接提示为绑定](./images/10.8.gif)
+
+我直接从数据库里面添加一条我的GitHub绑定关系再看效果
+
+![GitHub绑定关系再看效果](./images/10.9.gif)
+
+7. 总结
+
+到此第三方github集成openiddict授权登录的功能&UI授权登录已经完成了。由于个人水平有限，在使用openiddict的过程中遇到了挺多的问题，加上openiddict的相关资料基本都是英文而且案例也少，所以难度又增加了亿点点。所幸的是花费了几天的时间终于完成了这个功能点。期待.NET的生态越来越好。
 
 
 

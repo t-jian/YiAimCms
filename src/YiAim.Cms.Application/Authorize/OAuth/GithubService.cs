@@ -7,7 +7,7 @@ using YiAim.Cms.Options;
 
 namespace YiAim.Cms.Authorize
 {
-    public class GithubService : ThirdOAuthServiceBase<GithubOptions, AccessTokenBase, dynamic>
+    public class GithubService : ThirdOAuthServiceBase<GithubOptions, AccessTokenBase, GithubAuthDto>
     {
         public override Dictionary<string, string> BuildAuthorizeUrlParams(string state)
         {

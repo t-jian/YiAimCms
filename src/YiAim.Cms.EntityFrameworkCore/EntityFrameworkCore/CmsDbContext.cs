@@ -14,6 +14,7 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using YiAim.Cms.Blogs;
+using YiAim.Cms.Users;
 
 namespace YiAim.Cms.EntityFrameworkCore;
 
@@ -50,6 +51,8 @@ public class CmsDbContext :
     public DbSet<TagMap> TagMaps { get; set; }
     #endregion
 
+    public DbSet<AppUserThirdAuth> AppUserThirdAuths { get; set; }
+
     public CmsDbContext(DbContextOptions<CmsDbContext> options)
         : base(options)
     {
@@ -63,6 +66,7 @@ public class CmsDbContext :
         builder.ConfigureSettingManagement();
         builder.ConfigureBackgroundJobs();
         builder.ConfigureAuditLogging();
+
         builder.ConfigureIdentity();
         builder.ConfigureOpenIddict();
         builder.ConfigureFeatureManagement();
@@ -89,6 +93,11 @@ public class CmsDbContext :
         {
             b.ToTable(CmsConsts.CmsDbTablePrefix + "tag_map", CmsConsts.DbSchema);
             b.HasKey(e => new { e.BlogId, e.TagId });
+        });
+        builder.Entity<AppUserThirdAuth>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "user_third_auth", CmsConsts.DbSchema);
+            b.ConfigureByConvention();
         });
     }
 }

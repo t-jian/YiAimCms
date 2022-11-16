@@ -72,7 +72,9 @@ namespace YiAim.Cms.Authorize
         {
             var accessToken = await GetAccessTokenAsync(code, state);
             var curAccessToken = accessToken as AccessTokenBase;
-            return await GetUserInfoAsync(curAccessToken.AccessToken);
+            var res = (await GetUserInfoAsync(curAccessToken.AccessToken)) as IAccessToken;
+            res.AccessToken = curAccessToken.AccessToken;
+            return res as TUserInfo;
         }
         /// <summary>
         /// 获取授权的access token

@@ -13,6 +13,7 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.OpenIddict.Applications;
 using Volo.Abp.PermissionManagement;
 using Volo.Abp.Uow;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace YiAim.Cms.OpenIddict;
 
@@ -45,8 +46,36 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
     [UnitOfWork]
     public virtual async Task SeedAsync(DataSeedContext context)
     {
-        await CreateScopesAsync();
-        await CreateApplicationsAsync();
+        // await CreateScopesAsync();
+        // await CreateApplicationsAsync();
+        await _applicationManager.CreateAsync(new OpenIddictApplicationDescriptor
+        {
+            ClientId = "third_auth",
+            ClientSecret = "",
+            ConsentType = ConsentTypes.External,
+            PostLogoutRedirectUris =
+    {
+                new Uri("https://localhost:44381/signout-callback-oidc")
+    },
+            RedirectUris =
+    {
+                new Uri("https://localhost:44381/signin-oidc")
+    },
+            Permissions =
+           {
+                Permissions.Endpoints.Authorization,
+                Permissions.Endpoints.Logout,
+                Permissions.Endpoints.Token,
+                Permissions.GrantTypes.AuthorizationCode,
+                Permissions.GrantTypes.RefreshToken,
+                Permissions.ResponseTypes.Code,
+                Permissions.Scopes.Email,
+                Permissions.Scopes.Profile,
+                Permissions.Scopes.Roles,
+                Permissions.Prefixes.GrantType + "third_auth",
+                "Cms"
+             }
+        });
     }
 
     private async Task CreateScopesAsync()
@@ -198,6 +227,7 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
                 clientUri: swaggerRootUrl
             );
         }
+
     }
 
     private async Task CreateApplicationAsync(

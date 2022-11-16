@@ -1,7 +1,6 @@
 import { asyncRoutes, constantRoutes } from '@/router'
 
 function hasPermission(roles, route) {
-  console.log(route,455)
   if (route.meta && route.meta.policy) {
     return roles[route.meta.policy]
   } else {
@@ -11,7 +10,6 @@ function hasPermission(roles, route) {
 
 export function filterAsyncRoutes(routes, roles) {
   const res = []
-  
   routes.forEach(route => {
     const tmp = { ...route }
     if (hasPermission(roles, tmp)) {
