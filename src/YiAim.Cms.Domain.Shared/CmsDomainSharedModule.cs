@@ -15,6 +15,7 @@ using Volo.Abp.VirtualFileSystem;
 using YiAim.Cms.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Yitter.IdGenerator;
 
 namespace YiAim.Cms;
 
@@ -26,9 +27,9 @@ namespace YiAim.Cms;
     typeof(AbpOpenIddictDomainSharedModule),
     typeof(AbpPermissionManagementDomainSharedModule),
     typeof(AbpSettingManagementDomainSharedModule),
-    typeof(AbpTenantManagementDomainSharedModule)    
+    typeof(AbpTenantManagementDomainSharedModule)
     )]
-    public class CmsDomainSharedModule : AbpModule
+public class CmsDomainSharedModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {

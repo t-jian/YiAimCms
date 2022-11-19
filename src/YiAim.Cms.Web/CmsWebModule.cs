@@ -38,6 +38,7 @@ using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using OpenIddict.Server;
 using System.Threading.Tasks;
+using Yitter.IdGenerator;
 
 namespace YiAim.Cms.Web;
 
@@ -108,7 +109,62 @@ public class CmsWebModule : AbpModule
                 option.AllowCustomFlow(GlobalConstant.OpeniddictGrantType_ThirdAuth);
                 option.SetTokenEndpointUris(new[] { "/ym/connect/token" });
             });
+
+        // 设置雪花Id的workerId，确保每个实例workerId都应不同
+        YitIdHelper.SetIdGenerator(new IdGeneratorOptions {  WorkerId = 1}) ;
     }
+
+    public override void OnApplicationInitialization(ApplicationInitializationContext context)
+    {
+        var app = context.GetApplicationBuilder();
+        var env = context.GetEnvironment();
+
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+
+        app.UseAbpRequestLocalization();
+
+        if (!env.IsDevelopment())
+        {
+            app.UseErrorPage();
+        }
+
+        app.UseCorrelationId();
+        ConfigureStaticFiles(app);
+
+        app.UseRouting();
+        app.UseCors(DefaultCorsPolicyName);
+        app.UseAuthentication();
+
+        app.UseAbpOpenIddictValidation();
+
+        if (MultiTenancyConsts.IsEnabled)
+        {
+            app.UseMultiTenancy();
+        }
+
+        app.UseUnitOfWork();
+        app.UseAuthorization();
+        app.UseSwagger();
+        app.UseAbpSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "默认接口");
+            //var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
+            options.OAuthClientId("Cms_Swagger");
+            //options.OAuthClientSecret("1q2w3e*");
+            // options.ConfigObject.AdditionalItems = "ss";
+        });
+
+        app.UseAuditing();
+        app.UseAbpSerilogEnrichers();
+        app.UseConfiguredEndpoints();
+
+
+    }
+
+
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.AddAuthentication()
@@ -127,7 +183,7 @@ public class CmsWebModule : AbpModule
 
 
     }
-    private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
+    private void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
     {
 
         context.Services.AddAbpSwaggerGenWithOAuth(
@@ -255,51 +311,5 @@ public class CmsWebModule : AbpModule
             //}
         });
     }
-    public override void OnApplicationInitialization(ApplicationInitializationContext context)
-    {
-        var app = context.GetApplicationBuilder();
-        var env = context.GetEnvironment();
 
-        if (env.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
-
-        app.UseAbpRequestLocalization();
-
-        if (!env.IsDevelopment())
-        {
-            app.UseErrorPage();
-        }
-
-        app.UseCorrelationId();
-        ConfigureStaticFiles(app);
-
-        app.UseRouting();
-        app.UseCors(DefaultCorsPolicyName);
-        app.UseAuthentication();
-
-        app.UseAbpOpenIddictValidation();
-
-        if (MultiTenancyConsts.IsEnabled)
-        {
-            app.UseMultiTenancy();
-        }
-
-        app.UseUnitOfWork();
-        app.UseAuthorization();
-        app.UseSwagger();
-        app.UseAbpSwaggerUI(options =>
-        {
-            options.SwaggerEndpoint("/swagger/v1/swagger.json", "默认接口");
-            //var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
-            options.OAuthClientId("Cms_Swagger");
-            //options.OAuthClientSecret("1q2w3e*");
-            // options.ConfigObject.AdditionalItems = "ss";
-        });
-
-        app.UseAuditing();
-        app.UseAbpSerilogEnrichers();
-        app.UseConfiguredEndpoints();
-    }
 }

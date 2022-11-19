@@ -293,7 +293,7 @@ export default {
           type:type,
           client_secret: ""
       }
-      console.log(clientSetting,555)
+        console.log(clientSetting,555)
         this.$store.dispatch("user/login", clientSetting)
             .then(() => {
               this.$router.push({

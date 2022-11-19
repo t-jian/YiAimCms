@@ -10,7 +10,6 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 const whiteList = ['/login','/auth-redirect'] 
 
 router.beforeEach(async(to, from, next) => {
-
   NProgress.start()
   document.title = getPageTitle(to.meta.title)
   //在请求之前获取abp应用配置信息
@@ -36,18 +35,19 @@ router.beforeEach(async(to, from, next) => {
            await store.dispatch('user/setRoles', abpConfig.currentUser.roles)
            const accessRoutes = await store.dispatch('permission/generateRoutes',abpConfig.auth.grantedPolicies)
            router.addRoutes(accessRoutes)
-           next()
+           next(to.path)
           } catch (error) {
             await store.dispatch('user/resetToken')
             Message.error(error || 'Has Error')
-             next(`/login?redirect=${to.path}`)
+            next(`/login?redirect=${to.path}`)
+            NProgress.done()
           }
-          NProgress.done()
         }
       }
     } else {
       //没有登录直接前往登录页面
       next(`/login?redirect=${to.path}`)
+      NProgress.done()
     }
   }
 })

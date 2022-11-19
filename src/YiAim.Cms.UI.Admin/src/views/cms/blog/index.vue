@@ -153,7 +153,7 @@
         </el-button>
       </div>
     </el-dialog>
-    <!-- <image-cropper
+    <image-cropper
       ref="imagecropper"
       :options="cropperOptions"
       :imgSize="3"
@@ -161,7 +161,7 @@
       :imageUrl="imgUrl"
       @crop-upload-close="cropClose"
       @crop-upload-success="cropSuccess"
-    /> -->
+    />
   </div>
 </template>
 
@@ -231,23 +231,23 @@ export default {
     cropSuccess(data, callback) {
       console.log(data, "上传图片成功");
       if (this.currentEditArticleId != null) {
-        article
-          .updateThumb({ id: this.currentEditArticleId, path: data.fileUrl })
-          .then((res) => {
-            callback(false);
-            if (res.success) {
-              let currentArticle = this.list.filter(
-                (n) => n.id == this.currentEditArticleId
-              )[0];
-              currentArticle.thumImg = data.fileUrl;
-              this.$mtip.success(res.message);
-            } else {
-              this.$mtip.error(res.message);
-            }
-          })
-          .catch((error) => {
-            callback(false);
-          });
+        // article
+        //   .updateThumb({ id: this.currentEditArticleId, path: data.fileUrl })
+        //   .then((res) => {
+        //     callback(false);
+        //     if (res.success) {
+        //       let currentArticle = this.list.filter(
+        //         (n) => n.id == this.currentEditArticleId
+        //       )[0];
+        //       currentArticle.thumImg = data.fileUrl;
+        //       this.$mtip.success(res.message);
+        //     } else {
+        //       this.$mtip.error(res.message);
+        //     }
+        //   })
+        //   .catch((error) => {
+        //     callback(false);
+        //   });
       } else {
         callback(false);
       }
