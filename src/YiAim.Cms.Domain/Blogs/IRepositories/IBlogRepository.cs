@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Volo.Abp.Domain.Repositories;
 
 namespace YiAim.Cms.Blogs;
-public interface IBlogRepository : IRepository<Blog, int>
+public interface IBlogRepository : IRepository<Blog, long>
 {
     Task BatchInsert(IEnumerable<Blog> blogs);
 }

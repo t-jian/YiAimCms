@@ -5,7 +5,7 @@ using Volo.Abp.EntityFrameworkCore;
 using YiAim.Cms.EntityFrameworkCore;
 
 namespace YiAim.Cms.Blogs;
-public class BlogRepository : EfCoreRepository<CmsDbContext, Blog, int>, IBlogRepository
+public class BlogRepository : EfCoreRepository<CmsDbContext, Blog, long>, IBlogRepository
 {
     public BlogRepository(IDbContextProvider<CmsDbContext> dbContextProvider) : base(dbContextProvider)
     {

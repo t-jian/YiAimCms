@@ -8,7 +8,7 @@ public class UpdateBlogInput
     /// <summary>
     /// 分类
     /// </summary>
-    public int? CategoryId { get; set; }
+    public long? CategoryId { get; set; }
 
     public string Title { get; set; }
     /// <summary>

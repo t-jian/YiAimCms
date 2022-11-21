@@ -10,7 +10,7 @@ using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace YiAim.Cms.Users;
-public class AppUserThirdAuth : AuditedEntity<int>
+public class AppUserThirdAuth : AuditedEntity<Guid>
 {
     [NotNull]
     /// <summary>

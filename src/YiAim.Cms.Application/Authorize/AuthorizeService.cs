@@ -20,11 +20,11 @@ namespace YiAim.Cms.Authorize
     {
         private readonly GithubService _githubService;
         private readonly ILogger _logger;
-        private readonly IRepository<AppUserThirdAuth, int> _appUserThirdAuth;
+        private readonly IRepository<AppUserThirdAuth, Guid> _appUserThirdAuth;
         private readonly IdentityUserManager _IdentityUserManager;
         protected AbpSignInManager _signInManager { get; }
         private IHttpClientFactory _httpClient;
-        public AuthorizeService(IHttpClientFactory httpClient, AbpSignInManager SignInManager, IdentityUserManager identityUserManager, GithubService githubService, IRepository<AppUserThirdAuth, int> appUserThirdAuth, ILogger<AuthorizeService> logger)
+        public AuthorizeService(IHttpClientFactory httpClient, AbpSignInManager SignInManager, IdentityUserManager identityUserManager, GithubService githubService, IRepository<AppUserThirdAuth, Guid> appUserThirdAuth, ILogger<AuthorizeService> logger)
         {
             _githubService = githubService;
             _logger = logger;

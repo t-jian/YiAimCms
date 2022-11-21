@@ -1,8 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
+using System.ComponentModel.DataAnnotations.Schema;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
@@ -75,17 +79,20 @@ public class CmsDbContext :
         builder.Entity<Blog>(b =>
         {
             b.ToTable(CmsConsts.CmsDbTablePrefix + "blog", CmsConsts.DbSchema);
+            b.Property(n => n.Id).HasAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
             b.ConfigureByConvention();
         });
        
         builder.Entity<Category>(b =>
         {
             b.ToTable(CmsConsts.CmsDbTablePrefix + "category", CmsConsts.DbSchema);
+            b.Property(n => n.Id).HasAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
             b.ConfigureByConvention();
         });
         builder.Entity<Tag>(b =>
         {
             b.ToTable(CmsConsts.CmsDbTablePrefix + "tag", CmsConsts.DbSchema);
+            b.Property(n => n.Id).HasAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
             b.ConfigureByConvention();
         });
 

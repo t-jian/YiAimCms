@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Validation;
+using YiAim.Cms.Blogs;
 /// <summary>
 /// 文件管理不需要自动生成API
 /// </summary>
@@ -58,7 +59,7 @@ public class FileAppService : ApplicationService, IFileAppService
             throw new UserFriendlyException("Not a valid file format!");
         }
         string path = _fileOptions.FilePathFormat.Replace("{FileUploadLocalFolder}", _fileOptions.FileUploadRootFolder);
-        path = path.Replace("{FileTypeFormat}", _fileOptions.IsDistinguishType ? FileUtils.GetFileTypeFormat(Path.GetExtension(input.Name)).ToString() : FileTypeFormat.file.ToString());
+        path = path.Replace("{FileTypeFormat}", _fileOptions.IsDistinguishType ? FileUtils.GetFileTypeFormat(Path.GetExtension(input.Name)).ToString() : FileTypeFormat.File.ToString());
         path = path.Replace("{yyyy}", DateTime.Now.ToString("yyyy"))
                 .Replace("{mm}", DateTime.Now.ToString("MM"))
                 .Replace("{dd}", DateTime.Now.ToString("dd"));

@@ -13,16 +13,16 @@ using Microsoft.AspNetCore.Authorization;
 namespace YiAim.Cms.Blogs;
 
 [Authorize]
-public class CategoryService : CrudAppService<Category, CategoryDto, int, PagingInput, CreateCategoryInput, EditCategoryInput>, ICategoryService
+public class CategoryService : CrudAppService<Category, CategoryDto, long, PagingInput, CreateCategoryInput, EditCategoryInput>, ICategoryService
 {
-    public CategoryService(IRepository<Category, int> repository) : base(repository)
+    public CategoryService(IRepository<Category, long> repository) : base(repository)
     {
     }
 
     [HttpPost("/api/app/category/BatchDeleteIds")]
     public async Task BatchDeleteIds(BatchDeleteIdsInput input)
     {
-        int[] intids = input.Ids.Split(',').Select(n => Convert.ToInt32(n)).ToArray();
+        long[] intids = input.Ids.Split(',').Select(n => Convert.ToInt64(n)).ToArray();
         await Repository.DeleteManyAsync(intids);
     }
 

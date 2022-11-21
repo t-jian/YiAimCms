@@ -8,7 +8,7 @@ public class BaseCategoryDto
     public virtual string Title { get; set; }
     public virtual int Taxis { get; set; } = 1;
 }
-public class CategoryDto : EntityDto<int>
+public class CategoryDto : EntityDto<long>
 {
     public string Title { get; set; }
     public int Taxis { get; set; }

@@ -8,18 +8,18 @@ using Volo.Abp.Domain.Entities;
 
 namespace YiAim.Cms.Blogs;
 
-    /// <summary>
-    /// 标签与文章关联表
-    /// </summary>
-    public class TagMap : Entity
+/// <summary>
+/// 标签与文章关联表
+/// </summary>
+public class TagMap : Entity
+{
+    [NotNull]
+    public long TagId { get; set; }
+    [NotNull]
+    public long BlogId { get; set; }
+
+    public override object[] GetKeys()
     {
-        [NotNull]
-        public int TagId { get; set; }
-        [NotNull]
-        public int BlogId { get; set; }
-       
-        public override object[] GetKeys()
-        {
-            return new object[] { TagId, TagId };
-        }
+        return new object[] { TagId, TagId };
     }
+}

@@ -16,16 +16,16 @@ using Microsoft.AspNetCore.Authorization;
 namespace YiAim.Cms.Blogs;
 
 
-public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, int, PagingInput, CreateBlogInput, UpdateBlogInput>, IBlogService
+public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, long, PagingInput, CreateBlogInput, UpdateBlogInput>, IBlogService
 {
-    private readonly IRepository<Category, int> _categoryRepository;
-    private readonly IRepository<Tag, int> _tagRepository;
+    private readonly IRepository<Category, long> _categoryRepository;
+    private readonly IRepository<Tag, long> _tagRepository;
     private readonly IRepository<TagMap> _tagMapRepository;
     public BlogService(
-        IRepository<Category, int> categoryRepository,
-        IRepository<Tag, int> tagRepository,
+        IRepository<Category, long> categoryRepository,
+        IRepository<Tag, long> tagRepository,
         IRepository<TagMap> tagMapRepository,
-        IRepository<Blog, int> repository) : base(repository)
+        IRepository<Blog, long> repository) : base(repository)
     {
         _tagRepository = tagRepository;
         _tagMapRepository = tagMapRepository;
@@ -95,7 +95,7 @@ public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, int,
         return ObjectMapper.Map<Blog, BlogDetailDto>(blog);
     }
     [UnitOfWork]
-    public override async Task<BlogDetailDto> UpdateAsync(int id, UpdateBlogInput input)
+    public override async Task<BlogDetailDto> UpdateAsync(long id, UpdateBlogInput input)
     {
         var blog = await Repository.FirstOrDefaultAsync(n => n.Id == id);
         if (blog is null)

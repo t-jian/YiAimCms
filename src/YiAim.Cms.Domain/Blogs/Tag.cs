@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace YiAim.Cms.Blogs;
-public class Tag : FullAuditedAggregateRoot<int>, ITaxis
+public class Tag : AuditedEntity<long>, ITaxis
 {
     public Tag()
     {

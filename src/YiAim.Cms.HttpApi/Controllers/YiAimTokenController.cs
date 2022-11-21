@@ -18,8 +18,8 @@ namespace YiAim.Cms.Controllers;
 public class YiAimTokenController : TokenController
 {
     private readonly IAuthorizeService _authorizeService;
-    private readonly IRepository<AppUserThirdAuth, int> _appUserThirdAuth;
-    public YiAimTokenController(IAuthorizeService authorizeService, IRepository<AppUserThirdAuth, int> appUserThirdAuth)
+    private readonly IRepository<AppUserThirdAuth, Guid> _appUserThirdAuth;
+    public YiAimTokenController(IAuthorizeService authorizeService, IRepository<AppUserThirdAuth, Guid> appUserThirdAuth)
     {
         _authorizeService = authorizeService;
         _appUserThirdAuth = appUserThirdAuth;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -8,8 +9,9 @@ using System.Threading.Tasks;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace YiAim.Cms.Blogs;
-public class Blog : FullAuditedAggregateRoot<int>, ITaxis
+public class Blog : AuditedEntity<long>, ITaxis
 {
+    
     public Blog()
     {
         TagMaps = new HashSet<TagMap>();
@@ -62,7 +64,7 @@ public class Blog : FullAuditedAggregateRoot<int>, ITaxis
     public long PublishDate { get; set; }
     public int Taxis { get; set; } = 0;
 
-    public int? CategoryId { get; set; }
+    public long? CategoryId { get; set; }
     public virtual ICollection<TagMap> TagMaps { get; set; }
 
 }

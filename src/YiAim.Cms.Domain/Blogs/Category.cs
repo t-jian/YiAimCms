@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace YiAim.Cms.Blogs;
-public class Category : FullAuditedAggregateRoot<int>, ITaxis
+public class Category : AuditedEntity<long>, ITaxis
 {
+   
     //public Category()
     //{
     //    Blogs = new HashSet<Blog>();
@@ -18,5 +19,5 @@ public class Category : FullAuditedAggregateRoot<int>, ITaxis
     [MaxLength(150)]
     public string Title { get; set; }
     public int Taxis { get; set; } = 0;
-   // public ICollection<Blog> Blogs { get; set; }
+    // public ICollection<Blog> Blogs { get; set; }
 }

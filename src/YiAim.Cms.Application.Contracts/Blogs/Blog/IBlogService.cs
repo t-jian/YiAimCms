@@ -7,7 +7,7 @@ using Volo.Abp.Application.Services;
 
 namespace YiAim.Cms.Blogs;
 
-public interface IBlogService :ICrudAppService<BlogDetailDto, PageBlogDto, int, PagingInput, CreateBlogInput, UpdateBlogInput>
+public interface IBlogService :ICrudAppService<BlogDetailDto, PageBlogDto, long, PagingInput, CreateBlogInput, UpdateBlogInput>
 {
 
     Task UpdateTaxis(UpdateBlogCategoryInput input);

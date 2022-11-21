@@ -12,6 +12,7 @@ using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
+using Volo.Abp.Guids;
 
 namespace YiAim.Cms.EntityFrameworkCore;
 
@@ -43,9 +44,7 @@ namespace YiAim.Cms.EntityFrameworkCore;
 
         Configure<AbpDbContextOptions>(options =>
         {
-             
             options.UseMySQL();
         });
-
     }
 }

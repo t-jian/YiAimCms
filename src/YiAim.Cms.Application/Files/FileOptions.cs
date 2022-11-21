@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using YiAim.Cms.Blogs;
 
 namespace YiAim.Cms.Files
 {
@@ -32,7 +33,7 @@ namespace YiAim.Cms.Files
         /// </summary>
         public string[] AllowedUploadFormats { get; set; } = { ".jpg", ".jpeg", ".png", ".gif" };
 
-       
+
 
     }
 
@@ -43,19 +44,14 @@ namespace YiAim.Cms.Files
             fileSuffix = fileSuffix.ToLower();
             if (".jpg,.jpeg,.png,.gif,webp".Contains(fileSuffix))
             {
-                return FileTypeFormat.image;
+                return FileTypeFormat.Image;
             }
             if (".mp4,.3gp,.avi".Contains(fileSuffix))
             {
-                return FileTypeFormat.video;
+                return FileTypeFormat.Video;
             }
-            return FileTypeFormat.file;
+            return FileTypeFormat.File;
         }
     }
-    public enum FileTypeFormat
-    {
-        image,
-        file,
-        video,
-    }
+
 }
