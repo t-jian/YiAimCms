@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using YiAim.Cms.EntityFrameworkCore;
 using YiAim.Cms.Localization;
 using YiAim.Cms.MultiTenancy;
-using YiAim.Cms.Web.Menus;
 using Microsoft.OpenApi.Models;
 using Volo.Abp;
 using Volo.Abp.Account.Web;
@@ -39,6 +38,8 @@ using System.Collections.Generic;
 using OpenIddict.Server;
 using System.Threading.Tasks;
 using Yitter.IdGenerator;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 namespace YiAim.Cms.Web;
 
@@ -112,6 +113,10 @@ public class CmsWebModule : AbpModule
 
         // 设置雪花Id的workerId，确保每个实例workerId都应不同
         YitIdHelper.SetIdGenerator(new IdGeneratorOptions {  WorkerId = 1}) ;
+        //Razor视图运行时刷新实时编译 安装
+        context.Services.AddRazorPages().AddRazorRuntimeCompilation();
+        //中文不转码
+        context.Services.AddSingleton(HtmlEncoder.Create(UnicodeRanges.All));
     }
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
@@ -282,7 +287,7 @@ public class CmsWebModule : AbpModule
     {
         Configure<AbpNavigationOptions>(options =>
         {
-            options.MenuContributors.Add(new CmsMenuContributor());
+            //options.MenuContributors.Add(new CmsMenuContributor());
         });
     }
 

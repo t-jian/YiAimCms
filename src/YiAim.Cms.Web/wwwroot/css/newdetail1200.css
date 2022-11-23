@@ -1,0 +1,169 @@
+.aleft {
+    box-sizing: border-box;
+    padding: 20px 15px;
+    background-color: #fff;
+}
+
+.aleft .title {
+    text-align: center;
+    font-size: 24px;
+    line-height: 1.5;
+    color: #333;
+    font-weight: 700;
+}
+
+.aleft .articleInfo {
+    text-align: center;
+    font-size: 15px;
+    color: #999;
+    margin: 16px 0;
+}
+
+.aleft .articleInfo .author {
+    margin-right: 10px;
+}
+
+.aleft .content {
+    width: 100%;
+}
+
+.aleft .content .textarea {
+    width: 100%;
+    max-width: 835px;
+    min-height: 400px;
+}
+
+.aleft .content .textarea * {
+    max-width: 100%;
+    line-height: 1.8;
+    font-size: 15px;
+}
+
+.aleft .content .textarea p {
+    margin-bottom: 18px;
+    margin-top: 0;
+    margin: 15px 0;
+}
+
+.aleft .content .textarea a {
+    display: inline-block;
+}
+
+.aleft .content .textarea blockquote {
+    background-image: url("http://image.woshipm.com/fp/images/b.svg");
+    background-repeat: no-repeat;
+    background-position: left 30px top 20px;
+    background-color: #f8f8f8;
+    color: rgba(0, 0, 0, 0.68);
+    margin: 30px 0;
+    padding: 40px 30px 20px;
+}
+
+.aleft .content .textarea img {
+    display: block;
+    margin: 15px 0;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100% !important;
+}
+
+.aleft .content .textarea h3 {
+    font-weight: 700;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    background-repeat: no-repeat;
+    background-image: url("http://image.woshipm.com/fp/images/h2.svg");
+    padding-left: 15px;
+    background-position: 0 6px;
+    font-size: 18px;
+    color: rgba(0, 0, 0, 0.68);
+}
+
+.aleft .content .textarea h2 {
+    font-weight: 700;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    background-repeat: no-repeat;
+    font-size: 20px;
+    background-image: url("http://image.woshipm.com/fp/images/h1.svg");
+    padding-left: 25px;
+    background-position: 0 7px;
+}
+
+.aleft .content .textarea figcaption {
+    text-align: center;
+}
+
+.aleft .content .textarea div {
+    margin-bottom: 12px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.aleft .content .textarea>div {
+    font-size: 18px;
+    padding: 20px;
+}
+
+.aleft .content .textarea>div button {
+    fill: #fff;
+    font-size: 14px;
+    border: 1px solid #ff9f6b;
+    padding: 4px 22px;
+    border-radius: 999rem;
+    background-color: #ff9f6b;
+    color: #fff;
+    -webkit-appearance: none;
+    outline: none;
+}
+
+.aleft .content .textarea>div button svg:not(:root) {
+    overflow: hidden;
+}
+
+.aleft .content .specialtips {
+    font-size: 12px;
+    margin-top: 30px;
+    line-height: 1.5;
+    color: #aaa;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.aleft .content .othernews {
+    width: 100%;
+    margin-top: 30px;
+}
+
+.aleft .content .othernews .recommend-title {
+    height: 34px;
+    background: #ff9f6b;
+    line-height: 34px;
+    color: #fff;
+    width: 104px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.aleft .content .othernews .recommend-title::after {
+    content: "";
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 7px 11px 0 0;
+    border-color: #ff9f6b transparent transparent;
+}
+
+.aleft .content .othernews #load-more {
+    margin-top: 20px;
+    text-align: center;
+    line-height: 35px;
+    background: #f0f0f0;
+    font-size: 13px;
+    cursor: pointer;
+    color: #666;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}

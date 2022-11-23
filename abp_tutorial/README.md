@@ -46,7 +46,8 @@ vs2022打开时目录结构
 
 到此abp项目已经能正常运行，本章目标结束。
 如果ui端报错需要下章依赖，执行,具体请教百度
-```abp install-libs``` 
+
+`abp install-libs` 
 
 下章将进行与vue element admin 后台框架的对接，将完成登录、注册等功能。
 
@@ -418,6 +419,16 @@ router.beforeEach(async(to, from, next) => {
 
 但好像菜单都隐藏了，问题不大下章继续解决，本章到此已经结束，不然篇幅就太长了。本章我们完成了与vue-element-admin的接口对接，完成了登录、应用程序基本初始化功能。
 下章将要完成的是菜单权限，注销及其用户头像等信息的补全。
+
+
+
+
+
+
+
+
+
+
 
 ## 3）用户信息&菜单权限管理&vue项目瘦身
 上章完成了与vue-element-admin的接口对接，获取token登录的基本功能，本章将继续完成用户信息&菜单权限管理相关功能
@@ -1647,7 +1658,6 @@ export default {
 
 一个内容系统自然离不开富文本编辑器的支持，这里选择了老牌的百度编辑器（UEditor）作为用户内容输入的控件。个人多年下来也习惯它的风格与功能也认为UEditor是非常棒的富文本编辑器。虽然目前已经很少再更新了，但也不妨碍我们使用。
 
-
 1. 下载UEditor包后 在`public`将UEditor放到这个目录
 ![UEditor](../abp_tutorial/images/7.1png.png)
 
@@ -1655,9 +1665,9 @@ export default {
 
 Installation
 ```
-# vue-ueditor-wrap v2 仅支持 Vue 2
+//vue-ueditor-wrap v2 仅支持 Vue 2
 npm i vue-ueditor-wrap@2.x
-# 或者
+//或者
 yarn add vue-ueditor-wrap@2.x
 ```
 
@@ -4385,6 +4395,31 @@ afterQRScan(e) {
 7. 总结
 
 到此第三方github集成openiddict授权登录的功能&UI授权登录已经完成了。其中还有挺多的细节需要优化的比如：accesstoken的有效期（微信公众号的accesstoken为两个小时且一天之中有请求次数限制），实际项目中这些都是需要做处理的问题。在使用openiddict的过程中遇到了挺多的问题，加上openiddict的相关资料基本都是英文而且案例也少同时个人水平有限，所以难度又增加了亿点点。所幸的是花费了几天的时间终于完成了这个功能点。期待.NET的生态越来越好。
+
+## 11) 素材文件管理&redis缓存使用
+
+> 本章开始之前呢，我这里将部分表里面的主键修改long的类型，自增的id将由YitIdHelper生成的雪花id代替，以方便我后面网站数据迁移。如果不想用自增id的小伙伴也可以修改一下。
+
+修改流程也简单
+
+1. 实体里面  
+`public class Blog : AuditedEntity<long>, ITaxis；`
+
+2. CmsDbContext里面
+ ```
+     builder.Entity<Blog>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "blog", CmsConsts.DbSchema);
+            b.Property(n => n.Id).HasAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
+            b.ConfigureByConvention();
+        });
+ ```
+ 3. 进行数据迁移，如果发现表中存在外键之类不能进行迁移的话可以直接删除所有的表或者先手动删除关联关系。迁移完成后再把引用的所有类型不匹配的修改
+
+
+ 
+
+
 
 
 

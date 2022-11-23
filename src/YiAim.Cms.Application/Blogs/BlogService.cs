@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace YiAim.Cms.Blogs;
 
 
-public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, long, PagingInput, CreateBlogInput, UpdateBlogInput>, IBlogService
+public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, long, PagedAndSortedResultRequestDto, CreateBlogInput, UpdateBlogInput>, IBlogService
 {
     private readonly IRepository<Category, long> _categoryRepository;
     private readonly IRepository<Tag, long> _tagRepository;
@@ -31,7 +31,7 @@ public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, long
         _tagMapRepository = tagMapRepository;
         _categoryRepository = categoryRepository;
     }
-    public override Task<PagedResultDto<PageBlogDto>> GetListAsync(PagingInput input)
+    public override Task<PagedResultDto<PageBlogDto>> GetListAsync(PagedAndSortedResultRequestDto input)
     {
         return base.GetListAsync(input);
     }

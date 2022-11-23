@@ -1,0 +1,193 @@
+﻿
+@{
+    string title = !string.IsNullOrWhiteSpace(ViewBag.title) ? ViewBag.title + "-目之瞬间-专注于互联网平台" : "生活日记-撰写以.NET|JAVA|小程序|前端等技术的工作与生活。|目之所及，皆是回忆";
+    string keywords = (ViewBag.keywords ?? "") + ".NEt/.NET CORE,JAVA,后端开发,前端（web）开发,目之所及，皆是回忆";
+    string desc = !string.IsNullOrWhiteSpace(ViewBag.desc) ? ViewBag.desc : "目之瞬间站点是一个记录作者工作以来的见闻。一个以技术栈.NET/.NET CORE,JAVA,PHP等后端开发为主，小程序、前端（web）开发为辅的IT互联网之旅。在工作中获取价值，在生活中获取幸福。一个平凡的人想要遇见一个不平凡的自己。";
+}
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@(title)</title>
+    <meta name="keywords" content="@keywords" />
+    <meta name="description" content="@desc" />
+    <meta name="author" content="目之、小檀" />
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link href="/css/m.css" rel="stylesheet">
+    @await RenderSectionAsync("header",false)
+
+</head>
+<body itemscope itemtype="http://schema.org/WebPage">
+    <div class="topBar">
+        <div class="container flex-c-sb ">
+            <div><span>目之瞬间-专注于互联网平台</span></div>
+            <div>
+                <ul class="display-flex">
+                    <li><a href="https://github.com/t-jian" target="_blank" rel="noopener">Github</a></li>
+                    <li><a href="https://blog.csdn.net/qq_35260798" target="_blank" rel="noopener">CSDN</a></li>
+                    <li><a href="/">本站历程</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <header class="navbar navbar-expand-md bd-navbar sticky-top header-navbar">
+        <nav class="container flex-wrap flex-md-nowrap">
+            <a class="navbar-brand p-0 d-inline-flex align-items-center logo-box" href="/" rel="section">
+                <img src="https://src-cdn.ztan.net/ztan/site_logo.png" alt="logo">
+                <hr class="d-md-none text-white-50">
+                <div>
+                    <h1 class="name">生活日记</h1>
+                    <h2 class="desc">目之所及，皆为回忆</h2>
+                </div>
+                <hr class="d-md-none text-white-50">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#bdNavbar" aria-controls="bdNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" class="bi" fill="#007aff" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2.5 11.5A.5.5 0 0 1 3 11h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 3h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"></path>
+                </svg>
+            </button>
+
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="bdNavbar" aria-labelledby="bdNavbarOffcanvasLabel" style="height: 100%;">
+                <div class="offcanvas-header pb-0">
+                    <h5 class="offcanvas-title d-inline-flex align-items-center" id="bdNavbarOffcanvasLabel">
+                        <img style="width:50px;" src="https://src-cdn.ztan.net/ztan/site_logo.png" alt="目之"><span>目之</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body pt-0">
+                    <hr class="d-md-none text-white-50">
+                    <ul class="m-0 p-0 header-nav-box">
+                        <li>
+                            <a href="/category/277868986871877" rel="section">
+                                <svg t="1657417864612" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="icon bi bi-house">
+                                    <path d="M958.17 447.4L760.69 249.92l-65.82 65.83 197.47 197.47L694.87 710.7l65.82 65.82 197.48-197.47 65.83-65.83zM263.3 249.92L65.82 447.4 0 513.22l65.82 65.83L263.3 776.52l65.82-65.82-197.47-197.48 197.47-197.47zM343.247 949.483L590.96 52.19l89.72 24.768-247.713 897.295z" p-id="13535" fill="currentColor"></path>
+                                </svg>
+                                .NET/.NET CORE
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/category/277869197291589" rel="section">
+                                <svg t="1657421459565" class="icon bi bi-house" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2300" width="16" height="16"><path d="M377.596784 791.989528s-39.199482 22.799699 27.799633 30.399598c81.198926 9.199878 122.598379 7.999894 211.997197-8.999881 0 0 23.599688 14.799804 56.399254 27.599635C473.395518 926.787745 220.198866 835.988946 377.596784 791.989528m-24.399677-112.198517s-43.799421 32.399572 23.199693 39.399479c86.598855 8.999881 155.197948 9.599873 273.596382-13.199825 0 0 16.399783 16.599781 42.199442 25.599661-242.596792 70.999061-512.593222 5.799923-338.995517-51.799315m206.397271-190.197485c49.399347 56.799249-12.999828 107.998572-12.999828 107.998572s125.398342-64.799143 67.799103-145.798072c-53.799289-75.599-94.998744-113.198503 128.198305-242.596792 0.199997 0-350.395367 87.598842-182.99758 280.396292m265.196493 385.194907s28.999617 23.799685-31.799579 42.399439c-115.798469 34.999537-481.593632 45.599397-583.192289 1.399982-36.599516-15.799791 31.999577-37.999498 53.599291-42.599437 22.399704-4.799937 35.399532-3.999947 35.399532-3.999947-40.599463-28.599622-262.596528 56.199257-112.798508 80.398937 408.3946 66.399122 744.790152-29.799606 638.791553-77.598974M396.396536 563.592548s-186.197538 44.199416-65.999128 60.199204c50.799328 6.79991 151.99799 5.199931 246.196745-2.599966 76.998982-6.399915 154.397958-20.39973 154.397958-20.39973s-27.19964 11.599847-46.799381 24.999669c-188.997501 49.799342-553.992675 26.599648-448.994063-24.19968 88.998823-42.799434 161.197869-37.999498 161.197869-37.999497m333.995583 186.597532c192.197459-99.79868 103.198635-195.797411 41.199456-182.797582-15.199799 3.199958-21.999709 5.999921-21.999709 5.99992s5.599926-8.799884 16.399783-12.599833c122.598379-43.199429 216.997131 127.198318-39.599477 194.597427 0-0.199997 2.99996-2.799963 3.999947-5.199932M614.393653 0s106.398593 106.398593-100.998664 269.99643c-166.197802 131.198265-37.999498 206.197274 0 291.596144-96.998717-87.598842-168.197776-164.597824-120.398408-236.396874C463.195652 220.197088 657.393085 168.997765 614.393653 0m-198.997369 1020.786502c184.397562 11.799844 467.593817-6.599913 474.19373-93.798759 0 0-12.799831 32.999564-152.397985 59.399214-157.397919 29.599609-351.595351 26.199654-466.59383 7.199905 0-0.199997 23.599688 19.399743 144.798085 27.19964" fill="currentColor" p-id="2301"></path></svg>
+                                JAVA技术
+                            </a>
+                        </li>
+                        <li class='menu'>
+                            <a  rel="section">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-columns-gap" viewBox="0 0 16 16">
+                                    <path d="M6 1v3H1V1h5zM1 0a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1H1zm14 12v3h-5v-3h5zm-5-1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-5zM6 8v7H1V8h5zM1 7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H1zm14-6v7h-5V1h5zm-5-1a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1h-5z" />
+                                </svg>
+                                网站/前端/技巧
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down text-black" viewBox="0 0 16 16">
+                                    <path d="M3.204 5h9.592L8 10.481 3.204 5zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659z" />
+                                </svg>
+                            </a>
+                           
+                                <ul class="sub">
+                                    <li><a href="/category/277869034123333" rel="section">前端（Web）</a></li>
+                                    <li><a href="/category/282867192823877" rel="section">小程序</a></li>
+                                    <li><a href="/category/282867156058181" rel="section">Database</a></li>
+                                    <li><a href="/category/282867231928389" rel="section">运维/部署</a></li>
+                                    <li><a href="/category/282867323596869" rel="section">开发技巧</a></li>
+                                </ul>
+                                <span></span>
+                        </li>
+                        <li class="menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-signpost-2" viewBox="0 0 16 16">
+                                <path d="M7 1.414V2H2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h5v1H2.5a1 1 0 0 0-.8.4L.725 8.7a.5.5 0 0 0 0 .6l.975 1.3a1 1 0 0 0 .8.4H7v5h2v-5h5a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H9V6h4.5a1 1 0 0 0 .8-.4l.975-1.3a.5.5 0 0 0 0-.6L14.3 2.4a1 1 0 0 0-.8-.4H9v-.586a1 1 0 0 0-2 0zM13.5 3l.75 1-.75 1H2V3h11.5zm.5 5v2H2.5l-.75-1 .75-1H14z" />
+                            </svg>足迹/生活
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down text-black" viewBox="0 0 16 16">
+                                <path d="M3.204 5h9.592L8 10.481 3.204 5zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659z" />
+                            </svg>
+                            <ul class="sub">
+                                <li><a href="/footprint" rel="section">足迹</a></li>
+                                <li><a href="/category/282867276382277" rel="section">Life</a></li>
+                            </ul>
+                        </li>
+
+
+                    </ul>
+                    <hr class="d-md-none text-white-50">
+                </div>
+            </div>
+        </nav>
+    </header>
+    <section>
+        @RenderBody()
+    </section>
+    <footer>
+        <div class="container-fluid footer-widget">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-4 col-lg-4">
+                        <h3 class="text-start">目之所及，皆为回忆</h3>
+                        <ul class="flex-wrap">
+                            <li class="item-3">
+                                <a target="_blank" href="/sitemap.xml" rel="noopener noreferrer">
+                                    <span>站点地图</span>
+                                </a>
+                            </li>
+                             <li class="item-3">
+                                <a target="_blank" href="http://sitemap.aimzhi.cn/" title="sitemap现线生成工具">
+                                    <span>sitemap工具</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-12 col-md-4 col-lg-4">
+                        <h3 class="text-start">关于</h3>
+                        <div class="text-start">
+                            <span>
+                                博主是一位后端(主.NET)开发工程师，毕业以来一直从事互联网的开发工作，逐渐向全栈靠拢，杂学旁收。期待一个平凡的人能遇见一个不平凡的自己。
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 col-lg-4">
+                        <h3 class="text-center">联系</h3>
+                        <div>
+                            <img src="/images/wx_official_account.jpg" width="80" height="80" alt="微信公众号" />
+                            <img src="/images/qq_me.png" width="80" height="80" alt="qq" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid" style="margin-top: 10px;">
+            <div class="row">
+                <div class="col-12 site-info">
+                    <div class="item">
+                        <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener external nofollow noreferrer">粤ICP备18087261号</a>
+                        <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44030702003505" target="_blank" rel="noopener external nofollow noreferrer">
+                            <img src="/images/icon_beian.png" alt="粤公网安备 44030702003505号" />粤公网安备 44030702003505号
+                        </a>
+                    </div>
+
+                </div>
+                <div class="item">2018-@(DateTime.Now.Year) Powered by .NET 6.0 on Linux</div>
+                <div class="item cdn">
+                    本网站由
+                    <a href="https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral" rel="noopener external nofollow noreferrer">
+                        <img src="/images/upyun_logo.png" alt="又拍云" style="width:50px;" />
+                    </a>
+                    提供CDN加速/云存储服务
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="/js/jquery-3.6.0.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    @await RenderSectionAsync("footer",false)
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?a66fca3b9bc4326d070c6067bbb320e6";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+</body>
+</html>

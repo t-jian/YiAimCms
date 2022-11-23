@@ -9,11 +9,12 @@ using System;
 using Volo.Abp;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
+using Volo.Abp.Application.Dtos;
 
 namespace YiAim.Cms.Blogs;
 
 [Authorize]
-public class CategoryService : CrudAppService<Category, CategoryDto, long, PagingInput, CreateCategoryInput, EditCategoryInput>, ICategoryService
+public class CategoryService : CrudAppService<Category, CategoryDto, long, PagedAndSortedResultRequestDto, CreateCategoryInput, EditCategoryInput>, ICategoryService
 {
     public CategoryService(IRepository<Category, long> repository) : base(repository)
     {

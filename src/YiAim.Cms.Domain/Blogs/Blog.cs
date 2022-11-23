@@ -7,13 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.Domain.Entities.Auditing;
+using Yitter.IdGenerator;
 
 namespace YiAim.Cms.Blogs;
 public class Blog : AuditedEntity<long>, ITaxis
 {
-    
+
     public Blog()
     {
+        this.Id = YitIdHelper.NextId();
         TagMaps = new HashSet<TagMap>();
     }
 
@@ -67,4 +69,8 @@ public class Blog : AuditedEntity<long>, ITaxis
     public long? CategoryId { get; set; }
     public virtual ICollection<TagMap> TagMaps { get; set; }
 
+    public void SetId(long id)
+    {
+        this.Id = id;
+    }
 }
