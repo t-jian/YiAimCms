@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 using YiAim.Cms.EntityFrameworkCore;
@@ -12,9 +13,10 @@ using YiAim.Cms.EntityFrameworkCore;
 namespace YiAim.Cms.Migrations
 {
     [DbContext(typeof(CmsDbContext))]
-    partial class CmsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221124102037_1124")]
+    partial class _1124
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1518,8 +1520,6 @@ namespace YiAim.Cms.Migrations
 
                     b.HasKey("AnthologyId", "BlogId");
 
-                    b.HasIndex("BlogId");
-
                     b.ToTable("cms_anthology_in_blog", (string)null);
                 });
 
@@ -1867,21 +1867,6 @@ namespace YiAim.Cms.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("YiAim.Cms.Blogs.AnthologyInBlog", b =>
-                {
-                    b.HasOne("YiAim.Cms.Blogs.Anthology", null)
-                        .WithMany("AnthologyInBlogs")
-                        .HasForeignKey("AnthologyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("YiAim.Cms.Blogs.Blog", null)
-                        .WithMany("AnthologyInBlogs")
-                        .HasForeignKey("BlogId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("YiAim.Cms.Blogs.TagMap", b =>
                 {
                     b.HasOne("YiAim.Cms.Blogs.Blog", null)
@@ -1937,15 +1922,8 @@ namespace YiAim.Cms.Migrations
                     b.Navigation("ConnectionStrings");
                 });
 
-            modelBuilder.Entity("YiAim.Cms.Blogs.Anthology", b =>
-                {
-                    b.Navigation("AnthologyInBlogs");
-                });
-
             modelBuilder.Entity("YiAim.Cms.Blogs.Blog", b =>
                 {
-                    b.Navigation("AnthologyInBlogs");
-
                     b.Navigation("TagMaps");
                 });
 

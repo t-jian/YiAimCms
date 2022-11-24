@@ -37,6 +37,7 @@
             width: 30%;
             background: url(/images/triangle_3.png) no-repeat center center / 100% 100%;
         }
+
     </style>
 }
 <div class="container home">
@@ -51,19 +52,22 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-12 col-md-8 col-lg-8 col-xl-9 ">
+    <div class="index-header">
+        <div class="header-left">
             <div class="swiper-container">
                 <div class="swiper-wrapper">
-                 @*   @foreach (var item in adverts)
-                    {
-                        <div class="swiper-slide">
-                            <img src="@item.ImgUrl" alt="@item.Title" />
-                            <div class="triangle triangle_3"></div>
-                            <div class="triangle triangle_2"></div>
-                            <div class="triangle triangle_1"></div>
-                        </div>
-                    }*@
+                    <div class="swiper-slide">
+                        <img src="https://imgs.ali213.net/news/IndexTJ/2022/11/18/2022111843437371.jpeg" />
+                        <div class="triangle triangle_3"></div>
+                        <div class="triangle triangle_2"></div>
+                        <div class="triangle triangle_1"></div>
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://imgs.ali213.net/news/IndexTJ/2022/11/18/2022111845807197.jpeg" />
+                        <div class="triangle triangle_3"></div>
+                        <div class="triangle triangle_2"></div>
+                        <div class="triangle triangle_1"></div>
+                    </div>
                 </div>
                 <!-- 如果需要分页器 -->
                 <div class="swiper-pagination"></div>
@@ -71,21 +75,38 @@
                 <!-- 如果需要滚动条 -->
                 <div class="swiper-scrollbar"></div>
             </div>
+        </div>
+        <div class="header-right">
+            <div class="header-right-t">
+                <div class="header-right-t-l"><a href="https://www.ali213.net/news/html/2021-12/643023.html" target="_blank"><img src="https://imgs.ali213.net/news/IndexTJ/2020/11/13/2020111355806537.jpg" alt="游戏史上的今天：索尼PSV发布 生不逢时的宝藏掌机"><em></em></a></div>
+                <div class="header-right-t-r">
+                    <div class="header-right-t-r-t"><span>2022年<font>11月24日</font></span><p>周四</p></div>
+                    <div class="header-right-t-r-m"><a href="https://www.ali213.net/news/html/2021-12/643023.html" target="_blank"><em>”</em><span>游戏史上的今天：索尼PSV发布 生不逢时的宝藏掌机</span></a></div>
+                    <div class="header-right-t-r-f"><a href="https://www.ali213.net/news/html/2021-12/643023.html" target="_blank">阅读详情</a></div>
+                </div>
+            </div>
+            <a class="header-right-f" href="//mp.ali213.net" target="_blank">申请入驻大侠号</a>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-8 col-xl-9 ">
+
             <div class="row zt-box">
-               @* @foreach (var item in zt)
+                @* @foreach (var item in zt)
                 {
-                    <article itemscope itemtype="http://schema.org/Article" lang="zh-CN"
-                             class="col-6 col-md-6 col-lg-3  m-0 p-0">
-                        <link itemprop="mainEntityOfPage" href="/news/@item.Id">
-                        <a href="/news/@item.Id" itemprop="url">
-                            <label class="c3 label">@(item.Count)篇文章</label>
-                            <img itemprop="contentUrl" src="@item.ThumImg" alt="@item.Title"
-                                 onerror="this.src='/images/thumb-2.jpg'" />
-                            <div class="content">
-                                <h1 itemprop="name headline" class="news-title es line-3">【专题】@item.Title</h1>
-                            </div>
-                        </a>
-                    </article>
+                <article itemscope itemtype="http://schema.org/Article" lang="zh-CN"
+                class="col-6 col-md-6 col-lg-3  m-0 p-0">
+                <link itemprop="mainEntityOfPage" href="/news/@item.Id">
+                <a href="/news/@item.Id" itemprop="url">
+                <label class="c3 label">@(item.Count)篇文章</label>
+                <img itemprop="contentUrl" src="@item.ThumImg" alt="@item.Title"
+                onerror="this.src='/images/thumb-2.jpg'" />
+                <div class="content">
+                <h1 itemprop="name headline" class="news-title es line-3">【专题】@item.Title</h1>
+                </div>
+                </a>
+                </article>
                 }*@
             </div>
             <div class="news-ul">
@@ -94,17 +115,17 @@
                     <article class="display-flex news-item" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
                         <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
                         @*@if (!string.IsNullOrWhiteSpace(item))
-                        {
-                            <figure class="news-figure">
-                                <img itemprop="contentUrl" src='@(item.ThumImg)' onerror="this.src='/images/thumb-1.jpg'" alt="@item.Title" />
-                            </figure>
-                        }*@
+                    {
+                    <figure class="news-figure">
+                    <img itemprop="contentUrl" src='@(item.ThumImg)' onerror="this.src='/images/thumb-1.jpg'" alt="@item.Title" />
+                    </figure>
+                    }*@
                         <div class="flex1">
                             <h1 itemprop="name headline" class="news-title">
-                               @* @if (!string.IsNullOrWhiteSpace(item.Column.Title))
-                                {
-                                    <label class="c@(item.Column.Sort) label">@item.Column.Title<i></i></label>
-                                }*@
+                                @* @if (!string.IsNullOrWhiteSpace(item.Column.Title))
+                            {
+                            <label class="c@(item.Column.Sort) label">@item.Column.Title<i></i></label>
+                            }*@
                                 <a href="/news/@item.Id" itemprop="url">@item.Title</a>
                             </h1>
                             <a itemprop="articleBody" class="news-desc es line-3" href="/news/@item.Id" itemprop="url">@item.Title</a>
@@ -125,8 +146,8 @@
                                             <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
                                         </svg>
                                         @*<time title="发表时间：@(TimeExtensions.TryDateTime(item.PublishDate).ToString("yy-MM-dd"))"
-                                              itemprop="dateCreated datePublished"
-                                              datetime="@TimeExtensions.TryDateTime(item.PublishDate).ToString("yy-MM-dd")">发表于 @TimeExtensions.TryDateTime(item.PublishDate).ToString("yy-MM-dd")</time>*@
+                                    itemprop="dateCreated datePublished"
+                                    datetime="@TimeExtensions.TryDateTime(item.PublishDate).ToString("yy-MM-dd")">发表于 @TimeExtensions.TryDateTime(item.PublishDate).ToString("yy-MM-dd")</time>*@
                                     </span>
                                 </li>
                             </ul>
@@ -185,15 +206,15 @@
                     <div class="guess-like-box">
                         @*@foreach (var item in guessLike)
                         {
-                            <article class="display-flex mb-10" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
-                                <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
-                                <div class="flex1">
-                                    <h1 itemprop="name headline" class="news-title es line-3">
-                                        <label class="c@(item.Column.Sort) label">@item.Column.Title<i></i></label>
-                                        <a href="/news/@item.Id" itemprop="url">@item.Title</a>
-                                    </h1>
-                                </div>
-                            </article>
+                        <article class="display-flex mb-10" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
+                        <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
+                        <div class="flex1">
+                        <h1 itemprop="name headline" class="news-title es line-3">
+                        <label class="c@(item.Column.Sort) label">@item.Column.Title<i></i></label>
+                        <a href="/news/@item.Id" itemprop="url">@item.Title</a>
+                        </h1>
+                        </div>
+                        </article>
                         }*@
                     </div>
                 </div>
@@ -213,37 +234,37 @@
                     el: '#thumbs',
                     spaceBetween: 10,
                     slidesPerView: 4,
-                    watchSlidesVisibility: true,/*避免出现bug*/
+                    watchSlidesVisibility: true,s
                 },
             }
         })
-        @* var mySwiper = new Swiper('.swiper-container', {
-        direction: 'horizontal',
-        loop: true,
-        pagination: {
-        el: '.swiper-pagination',
-        },
-        on: {
-        transitionEnd: function () {
-        var windowWidth = $(".swiper-container").height();
-        var triangle = $(".swiper-slide-active").find(".triangle");
-        animateTriangle(triangle, parseInt(windowWidth / 3) + "px", 1500);
-        },
-        transitionStart: function () {
-        var prev = $(".swiper-slide-prev").find(".triangle");
-        var active = $(".swiper-slide-active").find(".triangle");
-        var next = $(".swiper-slide-next").find(".triangle");
-        animateTriangle(prev, '0', 1);
-        animateTriangle(active, '0', 1);
-        animateTriangle(next, '0', 1);
+        var mySwiper = new Swiper('.swiper-container', {
+            direction: 'horizontal',
+            loop: true,
+            pagination: {
+                el: '.swiper-pagination',
+            },
+            on: {
+                transitionEnd: function () {
+                    var windowWidth = $(".swiper-container").height();
+                    var triangle = $(".swiper-slide-active").find(".triangle");
+                    animateTriangle(triangle, parseInt(windowWidth / 3) + "px", 1500);
+                },
+                transitionStart: function () {
+                    var prev = $(".swiper-slide-prev").find(".triangle");
+                    var active = $(".swiper-slide-active").find(".triangle");
+                    var next = $(".swiper-slide-next").find(".triangle");
+                    animateTriangle(prev, '0', 1);
+                    animateTriangle(active, '0', 1);
+                    animateTriangle(next, '0', 1);
+                }
+            },
+        })
+        function animateTriangle(item, offsetHeight, duration) {
+            item.stop().animate({
+                'height': offsetHeight
+            }, duration)
         }
-        },
-        }) *@
-            function animateTriangle(item, offsetHeight, duration) {
-                item.stop().animate({
-                    'height': offsetHeight
-                }, duration)
-            }
         $(function () {
             var $this = $(".home-notice");
             setInterval(function () {

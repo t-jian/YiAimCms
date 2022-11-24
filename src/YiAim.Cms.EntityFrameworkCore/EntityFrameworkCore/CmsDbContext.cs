@@ -53,6 +53,8 @@ public class CmsDbContext :
     public DbSet<Category> Categorys { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<TagMap> TagMaps { get; set; }
+    public DbSet<Anthology> Anthologys { get; set; }
+    public DbSet<AnthologyInBlog> AnthologyInBlogs { get; set; }
     #endregion
 
     public DbSet<AppUserThirdAuth> AppUserThirdAuths { get; set; }
@@ -100,6 +102,17 @@ public class CmsDbContext :
         {
             b.ToTable(CmsConsts.CmsDbTablePrefix + "tag_map", CmsConsts.DbSchema);
             b.HasKey(e => new { e.BlogId, e.TagId });
+        });
+        builder.Entity<Anthology>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "anthology", CmsConsts.DbSchema);
+            b.Property(n => n.Id).HasAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
+            b.ConfigureByConvention();
+        });
+        builder.Entity<AnthologyInBlog>(b =>
+        {
+            b.ToTable(CmsConsts.CmsDbTablePrefix + "anthology_in_blog", CmsConsts.DbSchema);
+            b.HasKey(e => new { e.AnthologyId,e.BlogId });
         });
         builder.Entity<AppUserThirdAuth>(b =>
         {

@@ -11,5 +11,5 @@ public class BaseBlogDto : EntityDto<long>
     public long? CategoryId { get; set; }
     public long PublishDate { get; set; }
     public string Author { get; set; }
-    public bool IsHot { get; set; }
+    public bool IsHot { get; set; } 
 }

@@ -17,6 +17,7 @@ public class Blog : AuditedEntity<long>, ITaxis
     {
         this.Id = YitIdHelper.NextId();
         TagMaps = new HashSet<TagMap>();
+        AnthologyInBlogs = new HashSet<AnthologyInBlog>();
     }
 
     [NotNull]
@@ -68,6 +69,7 @@ public class Blog : AuditedEntity<long>, ITaxis
 
     public long? CategoryId { get; set; }
     public virtual ICollection<TagMap> TagMaps { get; set; }
+    public virtual ICollection<AnthologyInBlog> AnthologyInBlogs { get; set; }
 
     public void SetId(long id)
     {
