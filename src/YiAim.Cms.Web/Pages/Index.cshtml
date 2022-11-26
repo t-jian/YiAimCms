@@ -53,42 +53,129 @@
         </div>
     </div>
     <div class="index-header">
-        <div class="header-left">
-            <div class="swiper-container">
+        <div class="header-left" style="display:inline-flex;">
+            <div id="spwerThumb" thumbsSlider class="spwer-thumb">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide">
+                        <img src="https://imgs.ali213.net/news/IndexTJ/2022/11/17/20221117115705957.jpeg" />
+                    </div>
+
+                    <div class="swiper-slide">
                         <img src="https://imgs.ali213.net/news/IndexTJ/2022/11/18/2022111843437371.jpeg" />
-                        <div class="triangle triangle_3"></div>
-                        <div class="triangle triangle_2"></div>
-                        <div class="triangle triangle_1"></div>
                     </div>
                     <div class="swiper-slide">
                         <img src="https://imgs.ali213.net/news/IndexTJ/2022/11/18/2022111845807197.jpeg" />
-                        <div class="triangle triangle_3"></div>
-                        <div class="triangle triangle_2"></div>
-                        <div class="triangle triangle_1"></div>
                     </div>
                 </div>
-                <!-- 如果需要分页器 -->
-                <div class="swiper-pagination"></div>
 
-                <!-- 如果需要滚动条 -->
-                <div class="swiper-scrollbar"></div>
+            </div>
+            <div id="mainSwiper" class="swiper-container" style="flex:1;">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <img src="https://imgs.ali213.net/news/IndexTJ/2022/11/17/20221117115705957.jpeg" />
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://imgs.ali213.net/news/IndexTJ/2022/11/18/2022111843437371.jpeg" />
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://imgs.ali213.net/news/IndexTJ/2022/11/18/2022111845807197.jpeg" />
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
             </div>
         </div>
         <div class="header-right">
             <div class="header-right-t">
-                <div class="header-right-t-l"><a href="https://www.ali213.net/news/html/2021-12/643023.html" target="_blank"><img src="https://imgs.ali213.net/news/IndexTJ/2020/11/13/2020111355806537.jpg" alt="游戏史上的今天：索尼PSV发布 生不逢时的宝藏掌机"><em></em></a></div>
-                <div class="header-right-t-r">
-                    <div class="header-right-t-r-t"><span>2022年<font>11月24日</font></span><p>周四</p></div>
-                    <div class="header-right-t-r-m"><a href="https://www.ali213.net/news/html/2021-12/643023.html" target="_blank"><em>”</em><span>游戏史上的今天：索尼PSV发布 生不逢时的宝藏掌机</span></a></div>
-                    <div class="header-right-t-r-f"><a href="https://www.ali213.net/news/html/2021-12/643023.html" target="_blank">阅读详情</a></div>
+                <div class="header-right-t-l">
+                    <a href="https://www.ali213.net/news/html/2021-12/643023.html" target="_blank">
+                        <img src="@Model.LastAnthology?.Thumb" alt="@Model.LastAnthology?.Title"><em></em>
+                    </a>
+                </div>
+                <div class="header-right-date">
+                    <div>
+                        <span>@(DateTime.Now.Year)年</span>
+                        <font>@(DateTime.Now.ToString("MM月dd日"))</font>
+                    </div>
+                    @{ string[] Day = new string[] { "周日", "周一", "周二", "周三", "周四", "周五", "周六" };}
+                    <p>
+                        @(Day[Convert.ToInt32(DateTime.Now.DayOfWeek.ToString("d"))])</ p >
+                </div>
+                <div class="header-right-title">
+                    <a><em>”</em><span>"@Model.LastAnthology?.Title</span></a>
+                    <a class="go">阅读详情</a>
                 </div>
             </div>
-            <a class="header-right-f" href="//mp.ali213.net" target="_blank">申请入驻大侠号</a>
+            <div class="header-right-f">
+                <div>
+                    <ul>
+                        <li>
+                            <p class="site-state-item-name">原创</p>
+                            <p class="site-state-item-count">667</p>
+                        </li>
+                        <li>
+                            <p class="site-state-item-name">分类</p>
+                            <p class="site-state-item-count">10</p>
+                        </li>
+                        <li>
+                            <p class="site-state-item-name"> 标签</p>
+                            <p class="site-state-item-count">10</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-
     </div>
+
+    <div class="row mt-2">
+        <div class="col-12 col-md-8 col-lg-8 col-xl-9">
+            <div class="row bg-white">
+                <div class="col-12 col-md-4">
+                    <article itemscope itemtype="http://schema.org/Article" lang="zh-CN" class="">
+                        <link itemprop="mainEntityOfPage" href="">
+                        <a href="" itemprop="url">
+                            <div class="content">
+                                <h1 itemprop="name headline" class="news-title es line-3">【专题1111</h1>
+                            </div>
+                        </a>
+                    </article>
+                </div>
+                <div class="col-12 col-md-4">
+                    <article itemscope itemtype="http://schema.org/Article" lang="zh-CN" class="">
+                        <link itemprop="mainEntityOfPage" href="">
+                        <a href="" itemprop="url">
+                            <div class="content">
+                                <h1 itemprop="name headline" class="news-title es line-3">【专题1111</h1>
+                            </div>
+                        </a>
+                    </article>
+                </div>
+                <div class="col-12 col-md-4">
+                    <article itemscope itemtype="http://schema.org/Article" lang="zh-CN" class="">
+                        <link itemprop="mainEntityOfPage" href="">
+                        <a href="" itemprop="url">
+                            <div class="content">
+                                <h1 itemprop="name headline" class="news-title es line-3">【专题1111</h1>
+                            </div>
+                        </a>
+                    </article>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4 col-lg-4 col-xl-3">
+            <div class="seach-box">
+                <input placeholder="站内搜索" />
+                <button>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                         class="bi bi-search" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                    </svg>
+                    搜索
+                </button>
+            </div>
+        </div>
+     
+    </div>
+
     <div class="row">
         <div class="col-12 col-md-8 col-lg-8 col-xl-9 ">
 
@@ -113,7 +200,7 @@
                 @foreach (var item in Model.Blogs.Items)
                 {
                     <article class="display-flex news-item" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
-                        <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
+                        <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item">
                         @*@if (!string.IsNullOrWhiteSpace(item))
                     {
                     <figure class="news-figure">
@@ -162,45 +249,6 @@
         </div>
         <div class="col-12 col-md-4 col-lg-4 col-xl-3 ">
             <aside class="right-aside">
-                <div class="bg-white site-info panel-item mb-10">
-                    <img style="width: 100%;" src="https://oss.liuyanzhao.com/assets/img/Vlw7B6.jpg" alt="">
-                    <div class="mb-10">
-                        <nav class="site-state">
-                            <div class="site-state-item site-state-posts">
-                                <a href="/">
-                                    <span class="site-state-item-count">667</span>
-                                    <span class="site-state-item-name">内容</span>
-                                </a>
-                            </div>
-                            <div class="site-state-item site-state-categories">
-                                <a href="/category">
-                                    <span class="site-state-item-count">10</span>
-                                    <span class="site-state-item-name">分类</span>
-                                </a>
-                            </div>
-                            <div class="site-state-item site-state-tags">
-                                <a href="/tags">
-                                    <span class="site-state-item-count">10</span>
-                                    <span class="site-state-item-name"> 标签</span>
-                                </a>
-                            </div>
-                        </nav>
-                    </div>
-                    <div class="p-2">
-                        <div class="seach-box">
-                            <input placeholder="站内搜索" />
-                            <button>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                     class="bi bi-search" viewBox="0 0 16 16">
-                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                                </svg>
-                                搜索
-                            </button>
-
-                        </div>
-                    </div>
-                </div>
-
                 <div class="isgood_news panel-item sticky-top" style="top: 88px;">
                     <h2 class="h_title">推荐阅读</h2>
                     <div class="guess-like-box">
@@ -227,39 +275,24 @@
 @section footer{
     <script src="/js/swiper.min.js"></script>
     <script>
-        var gallerySwiper = new Swiper('#gallery', {
-            spaceBetween: 10,
-            thumbs: {
-                swiper: {
-                    el: '#thumbs',
-                    spaceBetween: 10,
-                    slidesPerView: 4,
-                    watchSlidesVisibility: true,s
-                },
-            }
-        })
-        var mySwiper = new Swiper('.swiper-container', {
+        var mainSwiper = new Swiper('#mainSwiper', {
             direction: 'horizontal',
             loop: true,
+            autoplay: true,
+            thumbs: {
+                swiper: {
+                    el: '#spwerThumb',
+                    direction: 'vertical',
+                    loop: true,
+                    slidesPerView: "auto",
+                    freeMode: true,
+                    watchSlidesProgress: true,
+                },
+            },
             pagination: {
                 el: '.swiper-pagination',
             },
-            on: {
-                transitionEnd: function () {
-                    var windowWidth = $(".swiper-container").height();
-                    var triangle = $(".swiper-slide-active").find(".triangle");
-                    animateTriangle(triangle, parseInt(windowWidth / 3) + "px", 1500);
-                },
-                transitionStart: function () {
-                    var prev = $(".swiper-slide-prev").find(".triangle");
-                    var active = $(".swiper-slide-active").find(".triangle");
-                    var next = $(".swiper-slide-next").find(".triangle");
-                    animateTriangle(prev, '0', 1);
-                    animateTriangle(active, '0', 1);
-                    animateTriangle(next, '0', 1);
-                }
-            },
-        })
+        });
         function animateTriangle(item, offsetHeight, duration) {
             item.stop().animate({
                 'height': offsetHeight

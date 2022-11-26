@@ -12,6 +12,7 @@ using Volo.Abp;
 using System.Text.Encodings.Web;
 using Volo.Abp.Uow;
 using Microsoft.AspNetCore.Authorization;
+using Volo.Abp.ObjectMapping;
 
 namespace YiAim.Cms.Blogs;
 
@@ -179,5 +180,27 @@ public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, long
                 await _tagMapRepository.DeleteManyAsync(tagmaps);
             await Repository.DeleteAsync(blog);
         }
+    }
+
+    public async Task<List<PageBlogDto>> GetRandomBlogsClient(int limit = 10)
+    {
+        var queryable = await Repository.GetQueryableAsync();
+        var queryResult = await AsyncExecuter.ToListAsync(queryable.Where(n => n.Status == BlogPostStatus.Published)
+            .OrderBy(n => Guid.NewGuid()).Take(limit));
+        var result = queryResult.Select(n => { return ObjectMapper.Map<Blog, PageBlogDto>(n); }).ToList();
+        return result;
+    }
+
+    public async Task<List<PageBlogDto>> GetHotBlogsClient(int limit = 10, bool isRandom = false)
+    {
+        var queryable = await Repository.GetQueryableAsync();
+        var query = queryable.Where(n => n.Status == BlogPostStatus.Published && n.IsHot);
+        if (isRandom)
+            query = query.OrderBy(n => Guid.NewGuid());
+        else
+            query = query.OrderByDescending(n => n.PublishDate);
+        var queryResult = await AsyncExecuter.ToListAsync(query.Take(limit));
+        var result = queryResult.Select(n => { return ObjectMapper.Map<Blog, PageBlogDto>(n); }).ToList();
+        return result;
     }
 }

@@ -18,5 +18,14 @@ public class CmsApplicationAutoMapperProfile : Profile
 
         CreateMap<CreateCategoryInput, Category>().ReverseMap();
         CreateMap<EditCategoryInput, Category>();
+
+
+
+        CreateMap<CreateAnthologyInput, Anthology>().ReverseMap();
+        CreateMap<UpdateAnthologyInput, Anthology>().ReverseMap();
+
+        CreateMap<Anthology, PageAnthologyDto>();
+        CreateMap<Anthology, AnthologyDto>();
+        CreateMap<Anthology, PageAnthologyClientDto>();
     }
 }
