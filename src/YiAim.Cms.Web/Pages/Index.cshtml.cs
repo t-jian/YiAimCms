@@ -7,20 +7,27 @@ namespace YiAim.Cms.Web.Pages;
 
 public class IndexModel : CmsPageModel
 {
-    private readonly IBlogService _BlogService;
+    private readonly IBlogService _blogService;
     private readonly IAnthologyService _AnthologyService;
-    public IndexModel(IBlogService BlogService, IAnthologyService anthologyService)
+    public IndexModel(IBlogService blogService, IAnthologyService anthologyService)
     {
-        _BlogService = BlogService;
+        _blogService = blogService;
         _AnthologyService = anthologyService;
     }
     public PagedResultDto<PageBlogDto> Blogs { get; set; }
+    public List<BlogClientDto> Blog48List { get; set; }
+    public List<BlogClientDto> HotRandomBlogs { get; set; }
+    public List<BlogClientDto> RandomBlogs { get; set; }
     public List<PageAnthologyClientDto> Anthologys { get; set; }
     public PageAnthologyClientDto LastAnthology { get; set; }
     public async Task OnGet()
     {
-        Blogs = await _BlogService.GetListAsync(new PagedAndSortedResultRequestDto() { SkipCount = 0, MaxResultCount = 10 });
+        Blogs = await _blogService.GetListAsync(new PagedAndSortedResultRequestDto() { SkipCount = 0, MaxResultCount = 10 });
+        Blog48List = await _blogService.GetHotBlogsClient(9, true);
+        RandomBlogs = await _blogService.GetRandomBlogsClient(9);
+        HotRandomBlogs = await _blogService.GetRandomBlogsClient(6);
         Anthologys = await _AnthologyService.GetRandomAnthologyClient();
         LastAnthology = await _AnthologyService.GetLastAnthologyClient();
+        //await _AnthologyService.GetLastAnthologyClient();
     }
 }

@@ -3,6 +3,7 @@
 @using YiAim.Cms.Blogs;
 @using YiAim.Cms.Localization
 @using Volo.Abp.Users
+@using YiAim.Cms.Extensions
 @model YiAim.Cms.Web.Pages.IndexModel
 @inject IHtmlLocalizer<CmsResource> L
 @inject ICurrentUser CurrentUser
@@ -96,7 +97,9 @@
                         <span>@(DateTime.Now.Year)年</span>
                         <font>@(DateTime.Now.ToString("MM月dd日"))</font>
                     </div>
-                    @{ string[] Day = new string[] { "周日", "周一", "周二", "周三", "周四", "周五", "周六" };}
+                    @{
+                        string[] Day = new string[] { "周日", "周一", "周二", "周三", "周四", "周五", "周六" };
+                    }
                     <p>
                         @(Day[Convert.ToInt32(DateTime.Now.DayOfWeek.ToString("d"))])</ p >
                 </div>
@@ -128,77 +131,74 @@
 
     <div class="row mt-2">
         <div class="col-12 col-md-8 col-lg-8 col-xl-9">
-            <div class="row bg-white">
-                <div class="col-12 col-md-4">
-                    <article itemscope itemtype="http://schema.org/Article" lang="zh-CN" class="">
-                        <link itemprop="mainEntityOfPage" href="">
-                        <a href="" itemprop="url">
-                            <div class="content">
-                                <h1 itemprop="name headline" class="news-title es line-3">【专题1111</h1>
+            <div class="swiper-container hotSwiper">
+                <div class="swiper-wrapper">
+                    @foreach (var itme in Model.HotRandomBlogs)
+                        @for (int i = 0; i < Model.HotRandomBlogs.Count() / 2; i++)
+                        {
+                            <div class="swiper-slide row bg-white">
+                                @foreach (var item in Model.HotRandomBlogs.Skip(i * 2).Take(2))
+                                {
+                                    <div class="col-6">
+                                        <article itemscope itemtype="http://schema.org/Article" lang="zh-CN" class="">
+                                            <link itemprop="mainEntityOfPage" href="">
+                                            <a href="" itemprop="url">
+                                                <h2 itemprop="name headline" class="news-title es line-3">@item.Title</h2>
+                                            </a>
+                                        </article>
+                                    </div>
+                                }
                             </div>
-                        </a>
-                    </article>
-                </div>
-                <div class="col-12 col-md-4">
-                    <article itemscope itemtype="http://schema.org/Article" lang="zh-CN" class="">
-                        <link itemprop="mainEntityOfPage" href="">
-                        <a href="" itemprop="url">
-                            <div class="content">
-                                <h1 itemprop="name headline" class="news-title es line-3">【专题1111</h1>
-                            </div>
-                        </a>
-                    </article>
-                </div>
-                <div class="col-12 col-md-4">
-                    <article itemscope itemtype="http://schema.org/Article" lang="zh-CN" class="">
-                        <link itemprop="mainEntityOfPage" href="">
-                        <a href="" itemprop="url">
-                            <div class="content">
-                                <h1 itemprop="name headline" class="news-title es line-3">【专题1111</h1>
-                            </div>
-                        </a>
-                    </article>
+                        }
                 </div>
             </div>
         </div>
         <div class="col-12 col-md-4 col-lg-4 col-xl-3">
-            <div class="seach-box">
-                <input placeholder="站内搜索" />
-                <button>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                         class="bi bi-search" viewBox="0 0 16 16">
-                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                    </svg>
-                    搜索
-                </button>
+            <div class="seach-container">
+                <div class="seach-box">
+                    <input placeholder="站内搜索" />
+                    <button>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                        </svg>
+                        搜索
+                    </button>
+                </div>
             </div>
         </div>
-     
     </div>
 
-    <div class="row">
-        <div class="col-12 col-md-8 col-lg-8 col-xl-9 ">
-
-            <div class="row zt-box">
-                @* @foreach (var item in zt)
+    <div class="row mt-3">
+        <div class="col-12 swiper-container ztSwiper">
+            <ul class="swiper-wrapper">
+                @for (var i = 0; i < 10; i++)
                 {
-                <article itemscope itemtype="http://schema.org/Article" lang="zh-CN"
-                class="col-6 col-md-6 col-lg-3  m-0 p-0">
-                <link itemprop="mainEntityOfPage" href="/news/@item.Id">
-                <a href="/news/@item.Id" itemprop="url">
-                <label class="c3 label">@(item.Count)篇文章</label>
-                <img itemprop="contentUrl" src="@item.ThumImg" alt="@item.Title"
-                onerror="this.src='/images/thumb-2.jpg'" />
-                <div class="content">
-                <h1 itemprop="name headline" class="news-title es line-3">【专题】@item.Title</h1>
-                </div>
-                </a>
-                </article>
-                }*@
-            </div>
+                    <li class="swiper-slide">
+                        <article itemscope itemtype="http://schema.org/Article" lang="zh-CN" class="">
+                            <link itemprop="mainEntityOfPage" href="">
+                            <a href="" itemprop="url">
+                                <img itemprop="contentUrl" src="/images/thumb-2.jpg"
+                                     alt="" onerror="this.src='/images/thumb-2.jpg'" />
+                                <div class="bottom-info">
+                                    <h2 itemprop="name headline" class="news-title es line-1">打发手动阀手动阀撒打发吗送到发撒打发吗是发撒打发</h2>
+                                    <p class="total">10篇文章</p>
+                                </div>
+                            </a>
+                        </article>
+                    </li>
+                }
+            </ul>
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+    <div class="row mt-3 mb-2">
+        <div class="col-12 col-md-8 col-lg-8 col-xl-9 ">
             <div class="news-ul">
                 @foreach (var item in Model.Blogs.Items)
                 {
+                    DateTime dt = UtilTools.TryDateTime(item.PublishDate);
+
                     <article class="display-flex news-item" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
                         <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item">
                         @*@if (!string.IsNullOrWhiteSpace(item))
@@ -208,13 +208,13 @@
                     </figure>
                     }*@
                         <div class="flex1">
-                            <h1 itemprop="name headline" class="news-title">
+                            <h2 itemprop="name headline" class="news-title">
                                 @* @if (!string.IsNullOrWhiteSpace(item.Column.Title))
                             {
                             <label class="c@(item.Column.Sort) label">@item.Column.Title<i></i></label>
                             }*@
                                 <a href="/news/@item.Id" itemprop="url">@item.Title</a>
-                            </h1>
+                            </h2>
                             <a itemprop="articleBody" class="news-desc es line-3" href="/news/@item.Id" itemprop="url">@item.Title</a>
                             <ul class="display-flex news-meta ">
                                 <li>
@@ -232,9 +232,7 @@
                                              class="bi bi-calendar" viewBox="0 0 16 16">
                                             <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
                                         </svg>
-                                        @*<time title="发表时间：@(TimeExtensions.TryDateTime(item.PublishDate).ToString("yy-MM-dd"))"
-                                    itemprop="dateCreated datePublished"
-                                    datetime="@TimeExtensions.TryDateTime(item.PublishDate).ToString("yy-MM-dd")">发表于 @TimeExtensions.TryDateTime(item.PublishDate).ToString("yy-MM-dd")</time>*@
+                                        <time title="发表时间：@(dt.ToString("yy-MM-dd"))"itemprop="dateCreated datePublished" datetime="@dt.ToString("yy-MM-dd")">发表于 @dt.ToString("yy-MM-dd")</time>
                                     </span>
                                 </li>
                             </ul>
@@ -244,38 +242,56 @@
                         </div>
                     </article>
                 }
-
             </div>
         </div>
         <div class="col-12 col-md-4 col-lg-4 col-xl-3 ">
-            <aside class="right-aside">
-                <div class="isgood_news panel-item sticky-top" style="top: 88px;">
-                    <h2 class="h_title">推荐阅读</h2>
-                    <div class="guess-like-box">
-                        @*@foreach (var item in guessLike)
-                        {
-                        <article class="display-flex mb-10" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
-                        <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
-                        <div class="flex1">
-                        <h1 itemprop="name headline" class="news-title es line-3">
-                        <label class="c@(item.Column.Sort) label">@item.Column.Title<i></i></label>
-                        <a href="/news/@item.Id" itemprop="url">@item.Title</a>
-                        </h1>
+            <aside class="right-aside sticky-top" style="top:68px">
+                @if (Model.Blog48List != null && Model.Blog48List.Count > 0)
+                {
+                    <div class="isgood_news panel-item">
+                        <div class="h_title mb-2">48小时阅读排序</div>
+                        <div class="guess-like-box">
+                            @foreach (var item in Model.Blog48List)
+                            {
+                                <article class="display-flex mb-10" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
+                                    <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
+                                    <div class="flex1">
+                                        <div itemprop="name headline" class="news-title es line-2">
+                                            <a href="/news/@item.Id" itemprop="url">@item.Title</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            }
                         </div>
-                        </article>
-                        }*@
                     </div>
-                </div>
+                }
+                @if (Model.RandomBlogs != null)
+                {
+                    <div class="isgood_news panel-item mt-2">
+                        <h2 class="h_title">推荐阅读</h2>
+                        <div class="guess-like-box">
+                            @foreach (var item in Model.RandomBlogs)
+                            {
+                                <article class="display-flex mb-10" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
+                                    <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
+                                    <div class="flex1">
+                                        <div itemprop="name headline" class="news-title es line-2">
+                                            <a href="/news/@item.Id" itemprop="url">@item.Title</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    </div>
+                }
             </aside>
         </div>
     </div>
 </div>
-
-
 @section footer{
     <script src="/js/swiper.min.js"></script>
     <script>
-        var mainSwiper = new Swiper('#mainSwiper', {
+        new Swiper('#mainSwiper', {
             direction: 'horizontal',
             loop: true,
             autoplay: true,
@@ -292,7 +308,42 @@
             pagination: {
                 el: '.swiper-pagination',
             },
+            on: {
+                //transitionEnd: function () {
+                //    var windowWidth = $(".swiper-container").height();
+                //    var triangle = $(".swiper-slide-active").find(".triangle");
+                //    animateTriangle(triangle, parseInt(windowWidth / 3) + "px", 1500);
+                //},
+                //transitionStart: function () {
+                //    var prev = $(".swiper-slide-prev").find(".triangle");
+                //    var active = $(".swiper-slide-active").find(".triangle");
+                //    var next = $(".swiper-slide-next").find(".triangle");
+                //    animateTriangle(prev, '0', 1);
+                //    animateTriangle(active, '0', 1);
+                //    animateTriangle(next, '0', 1);
+                //}
+            },
         });
+        new Swiper(".hotSwiper", {
+            direction: "vertical",
+            autoplay: {
+                delay: 5000,
+            },
+            loop: true,
+        });
+
+        new Swiper(".ztSwiper", {
+            slidesPerView: "auto",
+            loop: true,
+            centeredSlides: true,
+            autoplay: {
+                delay: 3000,
+            },
+            //pagination: {
+            //    el: '.swiper-pagination',
+            //},
+        });
+
         function animateTriangle(item, offsetHeight, duration) {
             item.stop().animate({
                 'height': offsetHeight

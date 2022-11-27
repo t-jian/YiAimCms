@@ -8,3 +8,8 @@ public class PageBlogDto : BaseBlogDto, IEntityDto<long>
 {
     public long Id { get; set; }
 }
+public class BlogClientDto : PageBlogDto
+{
+    public BaseCategoryDto Category { get; set; }
+
+}

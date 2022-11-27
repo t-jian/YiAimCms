@@ -12,7 +12,7 @@ public interface IBlogService : ICrudAppService<BlogDetailDto, PageBlogDto, long
 
     Task UpdateTaxis(UpdateBlogCategoryInput input);
     Task BatchDeleteIds(BatchDeleteIdsInput input);
-    Task<List<PageBlogDto>> GetRandomBlogsClient(int limit = 10);
-    Task<List<PageBlogDto>> GetHotBlogsClient(int limit = 10, bool isRandom = false);
+    Task<List<BlogClientDto>> GetRandomBlogsClient(int limit = 10);
+    Task<List<BlogClientDto>> GetHotBlogsClient(int limit = 10, bool isRandom = false);
 }
 

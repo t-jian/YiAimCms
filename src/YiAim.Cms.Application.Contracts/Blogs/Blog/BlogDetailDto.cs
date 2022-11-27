@@ -9,3 +9,4 @@ public class BlogDetailDto : BaseBlogDto, IEntityDto<long>
     public string Content { get; set; }
     public long Id { get ; set ; }
 }
+

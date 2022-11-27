@@ -182,16 +182,16 @@ public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, long
         }
     }
 
-    public async Task<List<PageBlogDto>> GetRandomBlogsClient(int limit = 10)
+    public async Task<List<BlogClientDto>> GetRandomBlogsClient(int limit = 10)
     {
         var queryable = await Repository.GetQueryableAsync();
         var queryResult = await AsyncExecuter.ToListAsync(queryable.Where(n => n.Status == BlogPostStatus.Published)
             .OrderBy(n => Guid.NewGuid()).Take(limit));
-        var result = queryResult.Select(n => { return ObjectMapper.Map<Blog, PageBlogDto>(n); }).ToList();
+        var result = queryResult.Select(n => { return ObjectMapper.Map<Blog, BlogClientDto>(n); }).ToList();
         return result;
     }
 
-    public async Task<List<PageBlogDto>> GetHotBlogsClient(int limit = 10, bool isRandom = false)
+    public async Task<List<BlogClientDto>> GetHotBlogsClient(int limit = 10, bool isRandom = false)
     {
         var queryable = await Repository.GetQueryableAsync();
         var query = queryable.Where(n => n.Status == BlogPostStatus.Published && n.IsHot);
@@ -200,7 +200,7 @@ public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, long
         else
             query = query.OrderByDescending(n => n.PublishDate);
         var queryResult = await AsyncExecuter.ToListAsync(query.Take(limit));
-        var result = queryResult.Select(n => { return ObjectMapper.Map<Blog, PageBlogDto>(n); }).ToList();
+        var result = queryResult.Select(n => { return ObjectMapper.Map<Blog, BlogClientDto>(n); }).ToList();
         return result;
     }
 }

@@ -79,7 +79,7 @@ ul {
 
 body {
   font-size: 14px;
-  background: #f3f8fb;
+  background: #f5f7f9;
   font-family: Arial, Microsoft YaHei, SimHei, Helvetica, sans-serif;
   font-size-adjust: none;
   -webkit-text-size-adjust: none;
@@ -428,8 +428,14 @@ footer .site-info .cdn {
 
 .panel-item .h_title {
   font-size: 16px;
-  border-bottom: 1px solid #ebedf0;
+  border-bottom: 1px solid #0d6efd;
   padding-bottom: 10px;
+}
+.panel-item .h_title::before {
+  content: "";
+  border: 2px solid #0d6efd;
+  border-radius: 2px;
+  margin-right: 4px;
 }
 
 .guess-like-box {
@@ -459,33 +465,6 @@ footer .site-info .cdn {
   margin-right: 10px;
 }
 
-.home .zt-box {
-  margin-top: 10px;
-}
-.home .zt-box article a {
-  background: #fff;
-  display: block;
-  width: calc(100% - 5px);
-  margin: 0 auto;
-}
-.home .zt-box article img {
-  width: 100%;
-  transition: all 0.6s;
-}
-.home .zt-box article .news-title {
-  padding: 6px;
-  height: 70px;
-}
-.home .zt-box article .label {
-  font-size: var(--fs-m);
-  background-color: var(--label-color);
-  color: #fff;
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 4px;
-}
-
 /** max-width: 576px 默认为移动端显示**/
 @media screen and (max-width: 576px) {
   .topBar {
@@ -507,9 +486,6 @@ footer .site-info .cdn {
   .header-navbar .logo-box .desc {
     display: none;
   }
-  .home .swiper-container {
-    height: 145px;
-  }
   .home .news-item {
     padding: 10px;
   }
@@ -527,9 +503,6 @@ footer .site-info .cdn {
   .home article .news-meta {
     font-size: var(--fs-m);
   }
-  .home .zt-box article img {
-    max-height: 90px;
-  }
   .detail {
     padding: 0;
     margin: 0;
@@ -546,18 +519,6 @@ footer .site-info .cdn {
   }
 }
 @media screen and (max-width: 768px) {
-  .swiper-container {
-    height: 160px;
-  }
-  .zt-box {
-    border-radius: 4px;
-    margin-top: 10px;
-  }
-  .zt-box h6 {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    border-left: 2px solid #0d6efd;
-  }
   footer .site-info {
     font-size: 13px;
   }
@@ -565,9 +526,6 @@ footer .site-info .cdn {
 @media screen and (min-width: 768px) {
   .header-nav-box li {
     padding: 0 6px;
-  }
-  .swiper-container {
-    height: 210px;
   }
   .right-aside .isgood_news {
     padding: 5px 10px 0;
@@ -585,7 +543,7 @@ footer .site-info .cdn {
     display: none;
   }
   .right-aside .panel-item .h-title {
-    font-size: 16px;
+    font-size: var(--fs-16);
     border-bottom: 1px solid #ebedf0;
     padding-bottom: 10px;
   }
@@ -596,9 +554,6 @@ footer .site-info .cdn {
   }
   .header-nav-box li {
     padding: 0 10px;
-  }
-  .swiper-container {
-    height: 280px;
   }
   .right-aside .isgood_news li i {
     width: 100px;
@@ -613,9 +568,6 @@ footer .site-info .cdn {
   }
 }
 @media (min-width: 1200px) {
-  .swiper-container {
-    height: 350px;
-  }
   .right-aside .isgood_news li span {
     display: block;
     bottom: 0;
@@ -1288,12 +1240,30 @@ footer .site-info .cdn {
   margin-top: 1rem;
 }
 
-.home .seach-box {
+.home .hotSwiper {
+  margin: 5px 0 0;
+  height: 50px;
+  border-radius: 4px;
+  line-height: 50px;
+  overflow: hidden;
+}
+.home .hotSwiper h2 {
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+}
+.home .seach-container {
+  display: flex;
+  align-items: center;
+  height: 50px;
+}
+.home .seach-container .seach-box {
   display: flex;
   width: 100%;
-  height: 32px;
+  height: 40px;
+  line-height: 40px;
 }
-.home .seach-box input {
+.home .seach-container .seach-box input {
   box-sizing: border-box;
   border: 0 none;
   outline: 0;
@@ -1305,10 +1275,10 @@ footer .site-info .cdn {
   border-radius: 16px 0 0 16px;
   border: 1px solid #f8f0ed;
 }
-.home .seach-box input:focus {
+.home .seach-container .seach-box input:focus {
   border: none;
 }
-.home .seach-box button {
+.home .seach-container .seach-box button {
   width: 70px;
   outline: 0;
   border: 0 none;
@@ -1318,4 +1288,72 @@ footer .site-info .cdn {
   transition: all 0.2s ease-in;
   background-color: #fc5531;
   color: #fff;
+}
+.home .ztSwiper {
+  position: relative;
+  width: 100%;
+}
+.home .ztSwiper .swiper-slide {
+  width: 160px;
+  height: 150px;
+}
+.home .ztSwiper .swiper-slide article {
+  position: relative;
+  width: 130px;
+  height: 100%;
+  display: block;
+  margin: 0 auto;
+  border-radius: 6px 0 0 6px;
+}
+.home .ztSwiper .swiper-slide article .bottom-info {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  padding: 5px 5px 0;
+  left: 0;
+  border-radius: 6px 6px 0px 4px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+  padding-bottom: 12px;
+}
+.home .ztSwiper .swiper-slide article .bottom-info h2 {
+  font-weight: 400;
+  line-height: 1.3;
+  -webkit-line-clamp: 2;
+  color: #fff;
+  text-shadow: #fff 0 0 4px;
+  font-size: 13px;
+}
+.home .ztSwiper .swiper-slide article .bottom-info .total {
+  position: absolute;
+  bottom: 0;
+  margin: 0;
+  font-size: 12px;
+  margin-bottom: 4px;
+  text-shadow: #222 0 0 4px;
+  color: #fff;
+}
+.home .ztSwiper .swiper-slide article::before {
+  content: "";
+  width: 3px;
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAF2CAYAAABXpQmzAAAAAXNSR0IArs4c6QAAAa5JREFUaAXt0kFKw2AYhOEmFemiZ/AAdlPoDVwI3sONuBEPohvFTe8hdOEJEghCLtAr2EURUv3+0MDAkPAf4A2kGSeTah6czeKoquovjp+6rts4XyOvUq9HKT8sY3Ad51N03/HAW9u2l8N9HQ5dupbxwOPxePyMaz8eG/YPxegmwkv/ZN9Mfzw0TbOa/Mbz82XXdfc5w7S/zR1eZQ3jpZZZw/S7GSaF0QOeUZp0Ax54TIB/CiPRAh7VsAyPkWgBj2pYhsdItIBHNSzDYyRawKMaluExEi3gUQ3L8BiJFvCohmV4jEQLeFTDMjxGogU8qmEZHiPRAh7VsAyPkWgBj2pYhsdItIBHNSzDYyRawKMaluExEi3gUQ3L8BiJFvCohmV4jEQLeFTDMjxGogU8qmEZHiPRAh7VsAyPkWgBj2pYhsdItIBHNSzDYyRawKMaluExEi3gUQ3L8BiJFvCohmV4jEQLeFTDMjxGokUWT1EUh6xhfPM+d7jLGZ7m8/k2Z/ixXq/byWG8xFf8fc/p7ceGpxi9LxaLu7j+puFF+jgfhyj3kXdxbjebTTvcSNd/EklHKcRk4F4AAAAASUVORK5CYII=);
+  background-size: 100% 100%;
+  position: absolute;
+  right: -3px;
+  height: 100%;
+}
+.home .ztSwiper .swiper-slide article:hover .bottom-info {
+  transition: all 0.8s;
+  background: linear-gradient(195deg, rgb(196, 249, 253) 15%, rgb(167, 221, 250) 70%);
+}
+.home .ztSwiper .swiper-slide article:hover .bottom-info h2 {
+  -webkit-line-clamp: 5;
+  color: #000;
+}
+.home .ztSwiper .swiper-slide-active article .bottom-info {
+  transition: all 0.8s;
+  background: linear-gradient(195deg, rgb(245, 239, 252) 15%, rgb(219, 207, 240) 70%);
+}
+.home .ztSwiper .swiper-slide-active article .bottom-info h2 {
+  -webkit-line-clamp: 5;
+  color: #000;
 }/*# sourceMappingURL=m.css.map */

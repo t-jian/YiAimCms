@@ -15,19 +15,59 @@ namespace YiAim.Cms.Extensions;
 public static class UtilTools
 {
     /// <summary>
-    /// The string time format is converted to DateTime
-    /// </summary>
-    /// <param name="time"></param>
-    /// <param name="defaultValue"></param>
-    /// <returns></returns>
-    public static DateTime ToDateTime(this string time, DateTime defaultValue = default)
+    ///  时间戳转本地时间-时间戳精确到秒
+    /// </summary> 
+    public static DateTime TryDateTime(this long unix)
     {
-        if (time.IsNullOrEmpty())
-            return defaultValue;
-
-        return DateTime.TryParse(time, out var dateTime) ? dateTime : defaultValue;
+        long dd = unix;
+        string txt = unix.ToString();
+        if (txt.Length != 10)
+        {
+            if (txt.Length > 10)
+                txt = txt.Substring(0, 10);
+            else
+                txt = txt.PadRight(10, '0');
+            dd = Convert.ToUInt32(txt);
+        }
+        var dto = DateTimeOffset.FromUnixTimeSeconds(dd);
+        return dto.ToLocalTime().DateTime;
     }
 
+    /// <summary>
+    ///  时间戳转本地时间-时间戳精确到毫秒
+    /// </summary> 
+    public static DateTime TryDateTimeSeconds(this long unix)
+    {
+        long dd = unix;
+        string txt = unix.ToString();
+        if (txt.Length != 13)
+        {
+            if (txt.Length > 13)
+                txt = txt.Substring(0, 13);
+            else
+                txt = txt.PadRight(13, '0');
+            dd = Convert.ToUInt32(txt);
+        }
+        var dto = DateTimeOffset.FromUnixTimeMilliseconds(dd);
+        return dto.ToLocalTime().DateTime;
+    }
+    /// <summary>
+    ///  时间转时间戳Unix-时间戳精确到秒
+    /// </summary> 
+    public static long TryLongToDateTime(this DateTime dt)
+    {
+        DateTimeOffset dto = new DateTimeOffset(dt);
+        return dto.ToUnixTimeSeconds();
+    }
+
+    /// <summary>
+    ///  时间转时间戳Unix-时间戳精确到毫秒
+    /// </summary> 
+    public static long TrySecondsToDateTime(this DateTime dt)
+    {
+        DateTimeOffset dto = new DateTimeOffset(dt);
+        return dto.ToUnixTimeMilliseconds();
+    }
 
 
 
