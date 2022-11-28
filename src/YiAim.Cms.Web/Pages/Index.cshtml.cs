@@ -14,7 +14,7 @@ public class IndexModel : CmsPageModel
         _blogService = blogService;
         _AnthologyService = anthologyService;
     }
-    public PagedResultDto<PageBlogDto> Blogs { get; set; }
+    public PagedResultDto<BlogClientDto> Blogs { get; set; }
     public List<BlogClientDto> Blog48List { get; set; }
     public List<BlogClientDto> HotRandomBlogs { get; set; }
     public List<BlogClientDto> RandomBlogs { get; set; }
@@ -22,7 +22,7 @@ public class IndexModel : CmsPageModel
     public PageAnthologyClientDto LastAnthology { get; set; }
     public async Task OnGet()
     {
-        Blogs = await _blogService.GetListAsync(new PagedAndSortedResultRequestDto() { SkipCount = 0, MaxResultCount = 10 });
+        Blogs = await _blogService.GetPageBlogClient(null,1, 20);
         Blog48List = await _blogService.GetHotBlogsClient(9, true);
         RandomBlogs = await _blogService.GetRandomBlogsClient(9);
         HotRandomBlogs = await _blogService.GetRandomBlogsClient(6);

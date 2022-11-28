@@ -19,7 +19,7 @@ public class CategoryService : CrudAppService<Category, CategoryDto, long, Paged
     public CategoryService(IRepository<Category, long> repository) : base(repository)
     {
     }
-
+   
     [HttpPost("/api/app/category/BatchDeleteIds")]
     public async Task BatchDeleteIds(BatchDeleteIdsInput input)
     {

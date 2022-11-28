@@ -13,6 +13,9 @@ using System.Text.Encodings.Web;
 using Volo.Abp.Uow;
 using Microsoft.AspNetCore.Authorization;
 using Volo.Abp.ObjectMapping;
+using System.Linq.Dynamic.Core;
+using System.Security.Cryptography;
+using System.Collections;
 
 namespace YiAim.Cms.Blogs;
 
@@ -184,23 +187,64 @@ public class BlogService : CrudAppService<Blog, BlogDetailDto, PageBlogDto, long
 
     public async Task<List<BlogClientDto>> GetRandomBlogsClient(int limit = 10)
     {
-        var queryable = await Repository.GetQueryableAsync();
-        var queryResult = await AsyncExecuter.ToListAsync(queryable.Where(n => n.Status == BlogPostStatus.Published)
-            .OrderBy(n => Guid.NewGuid()).Take(limit));
-        var result = queryResult.Select(n => { return ObjectMapper.Map<Blog, BlogClientDto>(n); }).ToList();
-        return result;
+        var query = await GetBlogs(c => c.Status == BlogPostStatus.Published);
+        return query.OrderBy(n => Guid.NewGuid()).Take(limit).ToList();
     }
 
     public async Task<List<BlogClientDto>> GetHotBlogsClient(int limit = 10, bool isRandom = false)
     {
-        var queryable = await Repository.GetQueryableAsync();
-        var query = queryable.Where(n => n.Status == BlogPostStatus.Published && n.IsHot);
+        var query = await GetBlogs(c => c.Status == BlogPostStatus.Published && c.IsHot);
         if (isRandom)
             query = query.OrderBy(n => Guid.NewGuid());
         else
             query = query.OrderByDescending(n => n.PublishDate);
-        var queryResult = await AsyncExecuter.ToListAsync(query.Take(limit));
-        var result = queryResult.Select(n => { return ObjectMapper.Map<Blog, BlogClientDto>(n); }).ToList();
-        return result;
+        return query.Take(limit).ToList();
+    }
+    private async Task<IEnumerable<BlogClientDto>> GetBlogs(Func<Blog, bool> func)
+    {
+        return from c in await Repository.GetListAsync()
+               join a in await _categoryRepository.GetListAsync() on c.CategoryId equals a.Id into tempTab
+               where func.Invoke(c)
+               orderby c.PublishDate descending
+               from temp in tempTab.DefaultIfEmpty()
+               group temp by new
+               {
+                   c.Id,
+                   c.IsHot,
+                   c.CategoryId,
+                   c.Digest,
+                   c.Status,
+                   c.Source,
+                   c.PublishDate,
+                   c.Author,
+                   c.Title,
+                   c.ThumbImg,
+                   c.Taxis,
+                   c.LinkUrl,
+                   cateTitle = temp.Title
+               } into item
+               select new BlogClientDto
+               {
+                   Id = item.Key.Id,
+                   Digest = item.Key.Digest,
+                   PublishDate = item.Key.PublishDate,
+                   Author = item.Key.Author,
+                   Category = new BaseCategoryDto { Taxis = 0, Title = item.Key.cateTitle },
+                   CategoryId = item.Key.CategoryId,
+                   IsHot = item.Key.IsHot,
+                   Taxis = item.Key.Taxis,
+                   LinkUrl = item.Key.LinkUrl,
+                   Source = item.Key.Source,
+                   Status = item.Key.Status,
+                   ThumbImg = item.Key.ThumbImg,
+                   Title = item.Key.Title,
+               };
+    }
+    public async Task<PagedResultDto<BlogClientDto>> GetPageBlogClient(long? cid, int page, int limit)
+    {
+
+        var responses = await GetBlogs(c => c.Status == BlogPostStatus.Published && cid != null && cid > 0 ? c.CategoryId == cid : true);
+        int total = responses.Count();
+        return new PagedResultDto<BlogClientDto>() { Items = responses.Skip((page - 1) * limit).Take(limit).ToList(), TotalCount = total };
     }
 }

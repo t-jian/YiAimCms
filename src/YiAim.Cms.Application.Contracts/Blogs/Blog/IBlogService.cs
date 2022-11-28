@@ -14,5 +14,6 @@ public interface IBlogService : ICrudAppService<BlogDetailDto, PageBlogDto, long
     Task BatchDeleteIds(BatchDeleteIdsInput input);
     Task<List<BlogClientDto>> GetRandomBlogsClient(int limit = 10);
     Task<List<BlogClientDto>> GetHotBlogsClient(int limit = 10, bool isRandom = false);
+    Task<PagedResultDto<BlogClientDto>> GetPageBlogClient(long?cid,int page, int limit);
 }
 

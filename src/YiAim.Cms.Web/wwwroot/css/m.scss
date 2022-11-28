@@ -391,7 +391,7 @@ article {
     transition: all 0.5s;
     box-shadow: 0px 5px 9px 1px rgba(144, 161, 180, 0.2);
     display: none;
-
+    width: 100%;
     li {
       width: 100%;
       background: #fff;
@@ -704,12 +704,9 @@ footer {
   font-size: 19px;
   color: #333;
   font-weight: bold;
+  margin: 0;
 }
 
-.logo-box .desc {
-  font-size: 13px;
-  color: #808595;
-}
 
 .isgood_news {
   border-radius: 3px;
@@ -793,26 +790,6 @@ footer {
   display: block;
   left: 135px;
   bottom: 10px;
-}
-
-.star5 {
-  background: url(../images/star5.png) no-repeat;
-}
-
-.star4 {
-  background: url(../images/star4.png) no-repeat;
-}
-
-.star3 {
-  background: url(../images/star3.png) no-repeat;
-}
-
-.star2 {
-  background: url(../images/star2.png) no-repeat;
-}
-
-.star1 {
-  background: url(../images/star1.png) no-repeat;
 }
 
 .isgood_news li:hover img {
@@ -1471,5 +1448,46 @@ footer {
         }
       }
     }
+  }
+}
+
+.location-nav {
+  .crm {
+    font-size: 0;
+    letter-spacing: -4px;
+    margin: 6px 0;
+    i {
+      display: inline-block;
+      vertical-align: top;
+      width: 16px;
+      height: 16px;
+      background: url(/images/re_add.png) no-repeat ;
+      letter-spacing: normal;
+      background-size: cover;
+    }
+    a {
+      position: relative;
+      display: inline;
+      padding-left: 12px;
+      font-size: 14px;
+      color: #929292;
+      letter-spacing: normal;
+      &::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 10px;
+        height: 10px;
+        background: url(/images/icon_replay.png) no-repeat;
+        background-size: 100% 100%;
+        transform: translate(0, -50%);
+      }
+      &:hover {
+        color: #dd3300;
+      }
+    }
+   
+    
   }
 }

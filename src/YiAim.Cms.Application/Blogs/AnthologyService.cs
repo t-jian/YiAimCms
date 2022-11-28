@@ -27,10 +27,11 @@ public class AnthologyService : CrudAppService<Anthology, AnthologyDto, PageAnth
     public async Task<List<PageAnthologyClientDto>> GetHotAnthologyClient(int limit = 10)
     {
         var queryable = await Repository.GetQueryableAsync();
+        var queryable2 = await _anthologyInBlogRepository.GetQueryableAsync();
         var queryResult = await AsyncExecuter.ToListAsync(queryable.Where(n => n.Status == BlogPostStatus.Published && n.IsHot)
             .OrderByDescending(n => n.CreationTime).Take(limit));
         var result = queryResult.Select(n => { return ObjectMapper.Map<Anthology, PageAnthologyClientDto>(n); }).ToList();
-        result.ForEach(async n => { n.Count = await _anthologyInBlogRepository.CountAsync(n => n.AnthologyId == n.AnthologyId); });
+        result.ForEach(async n => { n.Count = await AsyncExecuter.CountAsync(queryable2.Where(n => n.AnthologyId == n.AnthologyId)); });
         return result;
     }
     public async Task<PageAnthologyClientDto> GetLastAnthologyClient()

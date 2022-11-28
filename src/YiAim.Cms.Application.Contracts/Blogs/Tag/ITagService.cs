@@ -7,8 +7,8 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
 namespace YiAim.Cms.Blogs;
-public interface ICategoryService:ICrudAppService< CategoryDto, long, PagedAndSortedResultRequestDto, CreateCategoryInput, EditCategoryInput>
+public interface ITagService:ICrudAppService<TagDto, TagDto, long, PagedAndSortedResultRequestDto, TagBaseDto, TagBaseDto>
 {
-    Task<List<CategoryDto>> GetAll();
+    Task<List<TagAllDto>> GetAll();
     Task BatchDeleteIds(BatchDeleteIdsInput input);
 }

@@ -1,0 +1,155 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using YiAim.Cms.Blogs
+@using YiAim.Cms.Localization
+@using YiAim.Cms.Extensions
+@using Volo.Abp.Application.Dtos
+@inject IHtmlLocalizer<CmsResource> L
+@inject IBlogService _blogService
+@inject ICategoryService _categoryService;
+@{
+    long cid = ViewBag.Cid ?? 0;
+    int page = ViewBag.Page;
+    int limit = 20;
+    var pageResult = await _blogService.GetPageBlogClient(ViewBag.Cid, page, limit);
+    var randomBlogs = await _blogService.GetRandomBlogsClient(10);
+    var cateogry = cid==0?null:await _categoryService.GetAsync(cid);
+    string navText = cateogry?.Title ?? "全部";
+}
+@section header{
+    <style>
+
+    </style>
+}
+<div class="container location-nav">
+    <div class="crm">
+        <i></i>
+        <a href="/">首页</a>
+        <a href="/category/@cid">@navText</a>
+    </div>
+</div>
+<div class="container">
+    <div class="row mb-2">
+        <div class="col-12 col-md-8 col-lg-8 col-xl-9 ">
+            <div class="news-ul">
+                @foreach (var item in pageResult.Items)
+                {
+                    DateTime dt = UtilTools.TryDateTime(item.PublishDate);
+
+                    <article class="display-flex news-item" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
+                        <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item">
+                        @if (!string.IsNullOrWhiteSpace(item.ThumbImg))
+                        {
+                            <figure class="news-figure">
+                                <img itemprop="contentUrl" src='@(item.ThumbImg)' onerror="this.src='/images/thumb-1.jpg'" alt="@item.Title" />
+                            </figure>
+                        }
+                        <div class="flex1">
+                            <h2 itemprop="name headline" class="news-title">
+                                @* @if (!string.IsNullOrWhiteSpace(item.Column.Title))
+                            {
+                            <label class="c@(item.Column.Sort) label">@item.Column.Title<i></i></label>
+                            }*@
+                                <a href="/news/@item.Id" itemprop="url">@item.Title</a>
+                            </h2>
+                            <a itemprop="articleBody" class="news-desc es line-3" href="/news/@item.Id" itemprop="url">@item.Title</a>
+                            <ul class="display-flex news-meta ">
+                                <li>
+                                    <span class="flex-c">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                             class="bi bi-person" viewBox="0 0 16 16">
+                                            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z" />
+                                        </svg>
+                                        <span itemprop="author">@(string.IsNullOrWhiteSpace(item.Author) ? "t-jian" : item.Author)</span>
+                                    </span>
+                                </li>
+                                <li>
+                                    <span class="flex-c">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                             class="bi bi-calendar" viewBox="0 0 16 16">
+                                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
+                                        </svg>
+                                        <time title="发表时间：@(dt.ToString("yy-MM-dd"))" itemprop="dateCreated datePublished" datetime="@dt.ToString("yy-MM-dd")">发表于 @dt.ToString("yy-MM-dd")</time>
+                                    </span>
+                                </li>
+                            </ul>
+                            <button class="read-btn">
+                                <a class="text-light" href="/news/@item.Id" itemprop="url">立即阅读</a>
+                            </button>
+                        </div>
+                    </article>
+                }
+            </div>
+            <div class="d-flex justify-content-center w-100 mt-1">
+                @await Html.PartialAsync("../_GlobalPager",new
+                Tuple<int,int,string,int>(page,(int)pageResult.TotalCount,$"/category/{cid}/[page]",limit))
+            </div>
+        </div>
+        <div class="col-12 col-md-4 col-lg-4 col-xl-3 ">
+            <aside class="right-aside sticky-top" style="top:68px">
+                @if (randomBlogs != null)
+                {
+                    <div class="isgood_news panel-item mt-2">
+                        <h2 class="h_title">推荐阅读</h2>
+                        <div class="guess-like-box">
+                            @foreach (var item in randomBlogs)
+                            {
+                                <article class="display-flex mb-10" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
+                                    <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
+                                    <div class="flex1">
+                                        <div itemprop="name headline" class="news-title es line-2">
+                                            <a href="/news/@item.Id" itemprop="url">@item.Title</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    </div>
+                }
+            </aside>
+        </div>
+    </div>
+</div>
+
+@section footer{
+    <script>
+        //$(function () {
+        //    var loading = false, isMore = false;
+        //    $(window).bind("scroll", function () {
+        //        var scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+        //        //滚动条滚动距离
+        //        var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+        //        //窗口可视范围高度
+        //        var clientHeight = window.innerHeight || Math.min(document.documentElement.clientHeight, document.body.clientHeight);
+        //        if ((clientHeight + scrollTop) >= scrollHeight - 300) {
+        //            console.log("===加载更多内容……===");
+        //            reqMore();
+        //        }
+        //        function reqMore() {
+        //            if (loading) return
+        //            if (isMore) return
+        //            loading = true;
+        //            $("#load-more").show();
+        //            $.ajax({
+        //                url: `/ajax/post/${cid}/${page}`,
+        //                type: "get",
+        //                success: function (res) {
+        //                    loading = false;
+        //                    var container = $('<code></code>');
+        //                    let len = container.html(res.replace(/<img.*?(?:>|\/>)/gi, "")).find("li");
+        //                    isMore = len.length === 0;
+        //                    if (!isMore) {
+        //                        page += 1;
+        //                        $(".newsList").append(res);
+        //                        $("#load-more").hide();
+        //                    } else {
+        //                        $("#load-more").show().text("没有更多了");
+        //                        console.log("没有更多了")
+        //                    }
+        //                }
+        //            })
+        //        }
+        //    });
+        //})
+
+    </script>
+}

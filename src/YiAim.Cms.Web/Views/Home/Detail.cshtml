@@ -1,0 +1,135 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using YiAim.Cms.Blogs
+@using YiAim.Cms.Localization
+@using YiAim.Cms.Extensions
+@using Volo.Abp.Application.Dtos
+@inject IHtmlLocalizer<CmsResource> L
+@inject IBlogService _blogService
+@inject IAnthologyService _anthologyService
+@{
+    long id = ViewBag.Id;
+    BlogDetailDto news = await _blogService.GetAsync(id);
+    ViewBag.title = news.Title;
+    ViewBag.desc = news.Digest;
+    var randomBlogs = await _blogService.GetRandomBlogsClient(9);
+    var anthologys = await _anthologyService.GetRandomAnthologyClient(6);
+    // ViewBag.keywords = string.Join(",", newsTags);
+}
+@section header{
+    <link rel="stylesheet" href="https://src-cdn.ztan.net/js/ueditor-1.4.3/themes/iframe.css" />
+    <link rel="stylesheet" href="https://src-cdn.ztan.net/js/ueditor-1.4.3/themes/default/css/ueditor.min.css" />
+    <link href="/css/newdetail720.css" rel="stylesheet" media="screen and (min-width: 992px)">
+    <link href="/css/newdetail1200.css" rel="stylesheet" media="screen and (max-width: 992px)">
+}
+<div class="container location-nav">
+    <div class="crm">
+        <i></i>
+        <a href="/">首页</a>
+        <a href="/news/@id">@news.Title</a>
+    </div>
+</div>
+<div class="container detail">
+    <div class="row mt-2 mb-2">
+        <div class="col-12  col-md-8 col-lg-8 col-xl-9">
+            <article class="aleft ">
+                <h1 class="title">@news.Title</h1>
+                <div class="articleInfo">
+                    <span>@news.Author</span>&nbsp;<span>时间：@UtilTools.TryDateTime(news.PublishDate).ToString("yyyy-MM-dd")</span>
+                </div>
+                <div class="content" id="previewer">
+                    <section class="textarea">
+                        @Html.Raw(System.Web.HttpUtility.UrlDecode(news.Content))
+                    </section>
+                </div>
+                @* <div class="share">
+                <span>分享到：</span>
+                <div class="bdsharebuttonbox bdshare-button-style0-16">
+                <a title="分享到QQ好友" href="#" class="bds_sqq" data-cmd="sqq"></a>
+                <a title="分享到微信" href="#" class="bds_weixin" data-cmd="weixin"></a>
+                <a title="分享到QQ空间" href="#" class="bds_qzone" data-cmd="qzone"></a>
+                </div>
+                </div>*@
+                @* @if (news.ArticleTags.Count > 0)
+                {
+                <div class="tags">
+                标签：
+                @foreach (var item in news.ArticleTags)
+                {
+                <a href="/" target="_blank">@item.Tag.Name</a>
+                }
+                </div>
+                }*@
+                <div class="info-pre-next">
+                    @*    @if (news.Previous != null)
+                    {
+                    <p>上一篇:<a href="/news/@news.Previous.Id">@news.Previous.Title</a> </p>
+                    }
+                    else
+                    {
+                    <p></p>
+                    }
+                    @if (news.Next != null)
+                    {
+                    <p>下一篇:<a href="/news/@news.Next.Id">@news.Next.Title</a> </p>
+                    }
+                    else
+                    {
+                    <p></p>
+                    }*@
+                </div>
+            </article>
+        </div>
+        <div class="col-12  col-md-4 col-lg-4 col-xl-3">
+            <aside class="right-aside sticky-top" style="top:68px">
+                @if (anthologys != null)
+                {
+                    <div class="isgood_news panel-item">
+                        <h2 class="h_title">精选文集</h2>
+                        <div class="guess-like-box">
+                            @foreach (var item in anthologys)
+                            {
+                                <article class="display-flex mb-10" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
+                                    <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
+                                    <div class="flex1">
+                                        <div itemprop="name headline" class="news-title es line-2">
+                                            <a href="/news/@item.Id" itemprop="url">@item.Title</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    </div>
+                }
+                @if (randomBlogs != null)
+                {
+                    <div class="isgood_news panel-item  mt-2">
+                        <h2 class="h_title">推荐阅读</h2>
+                        <div class="guess-like-box">
+                            @foreach (var item in randomBlogs)
+                            {
+                                <article class="display-flex mb-10" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
+                                    <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
+                                    <div class="flex1">
+                                        <div itemprop="name headline" class="news-title es line-2">
+                                            <a href="/news/@item.Id" itemprop="url">@item.Title</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    </div>
+                }
+               
+            </aside>
+        </div>
+    </div>
+</div>
+@section footer{
+    <script src="https://src-cdn.ztan.net/js/ueditor-1.4.3/ueditor.parse.js"></script>
+    <script>
+        var resourceRoot = "https://src-cdn.ztan.net/js/ueditor-1.4.3";
+        $(function () {
+            uParse("#previewer", { rootPath: 'https://src-cdn.ztan.net/js/ueditor-1.4.3/', liiconpath: 'https://src-cdn.ztan.net/js/ueditor-1.4.3/listicon/' });
+        })
+    </script>
+}

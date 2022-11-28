@@ -7,7 +7,6 @@
 @model YiAim.Cms.Web.Pages.IndexModel
 @inject IHtmlLocalizer<CmsResource> L
 @inject ICurrentUser CurrentUser
-
 @section header{
     <link rel="stylesheet" href="/css/swiper.min.css" />
     <style>
@@ -172,17 +171,17 @@
     <div class="row mt-3">
         <div class="col-12 swiper-container ztSwiper">
             <ul class="swiper-wrapper">
-                @for (var i = 0; i < 10; i++)
+                @foreach (var item in Model.Anthologys)
                 {
                     <li class="swiper-slide">
-                        <article itemscope itemtype="http://schema.org/Article" lang="zh-CN" class="">
+                        <article itemscope itemtype="http://schema.org/Article" lang="zh-CN">
                             <link itemprop="mainEntityOfPage" href="">
                             <a href="" itemprop="url">
-                                <img itemprop="contentUrl" src="/images/thumb-2.jpg"
+                                <img itemprop="contentUrl" src="@item.Thumb"
                                      alt="" onerror="this.src='/images/thumb-2.jpg'" />
                                 <div class="bottom-info">
-                                    <h2 itemprop="name headline" class="news-title es line-1">打发手动阀手动阀撒打发吗送到发撒打发吗是发撒打发</h2>
-                                    <p class="total">10篇文章</p>
+                                    <h2 itemprop="name headline" class="news-title es line-1">@item.Title</h2>
+                                    <p class="total">@(item.Count)篇文章</p>
                                 </div>
                             </a>
                         </article>
@@ -201,18 +200,18 @@
 
                     <article class="display-flex news-item" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
                         <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item">
-                        @*@if (!string.IsNullOrWhiteSpace(item))
-                    {
-                    <figure class="news-figure">
-                    <img itemprop="contentUrl" src='@(item.ThumImg)' onerror="this.src='/images/thumb-1.jpg'" alt="@item.Title" />
-                    </figure>
-                    }*@
+                        @if (!string.IsNullOrWhiteSpace(item.ThumbImg))
+                        {
+                            <figure class="news-figure">
+                                <img itemprop="contentUrl" src='@(item.ThumbImg)' onerror="this.src='/images/thumb-1.jpg'" alt="@item.Title" />
+                            </figure>
+                        }
                         <div class="flex1">
                             <h2 itemprop="name headline" class="news-title">
-                                @* @if (!string.IsNullOrWhiteSpace(item.Column.Title))
-                            {
-                            <label class="c@(item.Column.Sort) label">@item.Column.Title<i></i></label>
-                            }*@
+                                @if (!string.IsNullOrWhiteSpace(item.Category?.Title))
+                                {
+                                    <label class="c@(item.Category.Taxis) label">@item.Category.Title<i></i></label>
+                                }
                                 <a href="/news/@item.Id" itemprop="url">@item.Title</a>
                             </h2>
                             <a itemprop="articleBody" class="news-desc es line-3" href="/news/@item.Id" itemprop="url">@item.Title</a>
@@ -232,7 +231,7 @@
                                              class="bi bi-calendar" viewBox="0 0 16 16">
                                             <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
                                         </svg>
-                                        <time title="发表时间：@(dt.ToString("yy-MM-dd"))"itemprop="dateCreated datePublished" datetime="@dt.ToString("yy-MM-dd")">发表于 @dt.ToString("yy-MM-dd")</time>
+                                        <time title="发表时间：@(dt.ToString("yy-MM-dd"))" itemprop="dateCreated datePublished" datetime="@dt.ToString("yy-MM-dd")">发表于 @dt.ToString("yy-MM-dd")</time>
                                     </span>
                                 </li>
                             </ul>

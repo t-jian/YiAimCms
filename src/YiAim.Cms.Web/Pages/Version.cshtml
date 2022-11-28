@@ -1,0 +1,182 @@
+﻿@page "/version"
+@using Microsoft.AspNetCore.Mvc.Localization
+@using YiAim.Cms.Blogs;
+@using YiAim.Cms.Localization
+@using Volo.Abp.Users
+@using YiAim.Cms.Extensions
+@inject IHtmlLocalizer<CmsResource> L
+@inject ICurrentUser CurrentUser
+@inject ITagService _tagService
+@inject IBlogService _blogService
+@inject IAnthologyService _anthologyService;
+@{
+    List<BlogClientDto> hotPosts = await _blogService.GetRandomBlogsClient(9);
+    //var hostAnthologys = await _anthologyService.GetHotAnthologyClient(3);
+    ViewBag.title = "本站发展历程";
+}
+@section header{
+    <link href="/css/version.css" rel="stylesheet" />
+    <script type="text/javascript">
+        $(function () {
+            systole();
+        });
+
+        function systole() {
+            if (!$(".history").length) {
+                return;
+            }
+            var $warpEle = $(".history-date"),
+                $targetA = $warpEle.find("h2 a,ul li dl dt a"),
+                parentH,
+                eleTop = [];
+
+            parentH = $warpEle.parent().height();
+            $warpEle.parent().css({ "height": 59 });
+
+            setTimeout(function () {
+
+                $warpEle.find("ul").children(":not('h2:first')").each(function (idx) {
+                    eleTop.push($(this).position().top);
+                    $(this).css({ "margin-top": -eleTop[idx] }).children().hide();
+                }).animate({ "margin-top": 0 }, 1600).children().fadeIn();
+
+                $warpEle.parent().animate({ "height": parentH }, 2600);
+
+                $warpEle.find("ul").children(":not('h2:first')").addClass("bounceInDown").css({ "-webkit-animation-duration": "2s", "-webkit-animation-delay": "0", "-webkit-animation-timing-function": "ease", "-webkit-animation-fill-mode": "both" }).end().children("h2").css({ "position": "relative" });
+
+            }, 600);
+
+            $targetA.click(function () {
+                $(this).parent().css({ "position": "relative" });
+                $(this).parent().siblings().slideToggle();
+                $warpEle.parent().removeAttr("style");
+                return false;
+            });
+        };
+    </script>
+}
+<div class="container">
+    <div class="row mt-2 mb-2">
+        <div class="col-12 col-sm-12 col-md-8 col-lg-8 col-xl-9">
+            <div class="history">
+                <div class="history-date">
+                    <ul>
+                        <h2 class="first">
+                            <a href="#nogo">2022年</a>本站发展历程
+                        </h2>
+                        <li class="green">
+                            <h3>11.27<span>2022</span></h3>
+                            <dl>
+                                <dt>核心框架ABP升级到6.0<span>重新构建部分页面&极大升级了界面的打开效率</span></dt>
+                            </dl>
+                        </li>
+                        <li>
+                            <h3>11.05<span>2022</span></h3>
+                            <dl>
+                                <dt>重新优化admi管理后台&用户授权服务<span>加入第三方授权登录 </span></dt>
+                                @*<a href="http://html5test.com/" target="_blank">http://html5test.com/</a>*@
+                            </dl>
+                        </li>
+                        <li>
+                            <h3>07.19<span>2012</span></h3>
+                            <dl>
+                                <dt>升级极速内核到20.0<span>HTML5支持度全球最好，达到469分，测试页面： </span></dt>
+                                <A href="http://html5test.com/" target="_blank">http://html5test.com/</A>
+                            </dl>
+                        </li>
+                        <li>
+                            <h3>07.02<span>2012</span></h3>
+                            <dl>
+                                <dt>升级极速内核到19.0<span>支持网络摄像头，浏览器可直接访问摄像头</span></dt>
+                            </dl>
+                        </li>
+                        <li class="green">
+                            <h3>06.27<span>2012</span></h3>
+                            <dl>
+                                <dt>发布国内首个HTML5实验室<span>大力推广HTML5</span></dt>
+                            </dl>
+                        </li>
+                    </ul>
+                </div>
+                <div class="history-date">
+                    <ul>
+                        <h2 class="date02"><a href="#nogo">2010年</a></h2>
+                        <li>
+                            <h3>12.13<span>2010</span></h3>
+                            <dl>
+                                <dt>升级极速内核到7.0<span>提升浏览器速度、增强安全性</span></dt>
+                            </dl>
+                        </li>
+                        <li>
+                            <h3>10.20<span>2010</span></h3>
+                            <dl>
+                                <dt>升级极速内核到6.0<span>新增360帐户，同步网络收藏夹</span></dt>
+                            </dl>
+                        </li>
+                        <li>
+                            <h3>09.15<span>2010</span></h3>
+                            <dl>
+                                <dt>首款双核安全浏览器 - 360极速浏览器发布<span>首个包含沙箱、系统级防注入、完整多进程隔离架构等安全机制的双核浏览器<br><br></span></dt>
+                                <br>
+                                <br>
+                                <br>
+                                <br>
+                            </dl>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-12 col-md- col-lg-4 col-xl-3">
+            <aside class="right-aside sticky-top" style="top:68px">
+                <div class="isgood_news panel-item ">
+                    <h2 class="h_title">热榜文集</h2>
+                    <ul>
+                        @*  @{
+                        int k = 0;
+                        foreach (var article in hostAnthologys)
+                        {
+                        k++;
+                        <li>
+                        <a href="/news/@article.Id" title="@article.Title" target="_self">
+                        @{
+                        string txt = article.Id.ToString();
+                        string thumb = string.IsNullOrWhiteSpace(article.Thumb) ? $"/images/thumb-{txt.Substring(txt.Length - 1)}.jpg" : article.Thumb;
+                        }
+                        <i><img src="@thumb" alt="@article.Title"></i><em>@k</em>
+                        <p>@article.Title</p>
+                        <span class="star@(6-k>2?6-k:"2")"></span>
+                        </a>
+                        </li>
+                        }
+                        }*@
+                    </ul>
+                </div>
+                @if (hotPosts != null)
+                {
+                    <div class="isgood_news panel-item mt-2">
+                        <h2 class="h_title">推荐阅读</h2>
+                        <div class="guess-like-box">
+                            @foreach (var item in hotPosts)
+                            {
+                                <article class="display-flex mb-10" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
+                                    <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
+                                    <div class="flex1">
+                                        <div itemprop="name headline" class="news-title es line-2">
+                                            <a href="/news/@item.Id" itemprop="url">@item.Title</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    </div>
+                }
+            </aside>
+        </div>
+    </div>
+</div>
+
+@section footer{
+
+   
+}

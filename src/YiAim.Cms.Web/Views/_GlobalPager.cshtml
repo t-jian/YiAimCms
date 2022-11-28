@@ -1,0 +1,90 @@
+﻿@{
+    //item1=page,item2=total,item3=链接格式[page]会被替换,item4=pageSize
+    Tuple<int, int, string,int> res = Model;
+    //每页大小
+    int pageSize = res.Item4;
+    ////当前页
+    int curPage = res.Item1;
+    //总页数
+    int total = res.Item2;
+    //跳转链接的格式[page]会被替换
+    string url = res.Item3;
+    //总页数
+    int totalPage = (int)(Math.Ceiling(total / (double)pageSize));
+    //显示的页码大小
+    int showPage = 9;
+    //页码两边差值
+    int cVal = 4;
+}
+@if (total > 0)
+{
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+
+            @if (curPage == 1)
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;</span>
+                </li>
+            }
+            else
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@url.Replace("[page]",(curPage-1).ToString())"  disabled aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            }
+
+            @if (totalPage <= showPage)
+            {
+                //总页数小于等于showPage，全部显示
+                for (int i = 1; i <= totalPage; i++)
+                {
+                    <li class="page-item  @(curPage == i?"active":"")" @(curPage==i?"aria-current='page''":"")>
+                        <a class="page-link" href="@url.Replace("[page]",(i).ToString())">@i</a>
+                    </li>
+                }
+            }
+            @if (totalPage > showPage)
+            {
+                //求出页码范围
+                int begin = curPage - cVal;
+                int end = curPage + cVal;
+                //头部超出
+                if (begin < 1)
+                {
+                    begin = 1;
+                    end = showPage;
+                }
+                //尾部超出
+                if (end > totalPage)
+                {
+                    begin = totalPage - showPage;
+                    end = totalPage;
+                }
+                for (int i = begin; i <= end; i++)
+                {
+                    <li class="page-item @(curPage == i?"active":"")" @(curPage==i?"aria-current='page''":"")>
+                        <a class="page-link" href="@url.Replace("[page]",(i).ToString())">@i</a>
+                    </li>
+                }
+            }
+            @if (curPage == totalPage)
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;</span>
+                </li>
+            }
+            else
+            {
+                <li class="page-item">
+
+                    <a class="page-link"href="@url.Replace("[page]",(curPage+1).ToString())"  aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

@@ -1,0 +1,105 @@
+﻿@page "/tags"
+@using Microsoft.AspNetCore.Mvc.Localization
+@using YiAim.Cms.Blogs;
+@using YiAim.Cms.Localization
+@using Volo.Abp.Users
+@using YiAim.Cms.Extensions
+@inject IHtmlLocalizer<CmsResource> L
+@inject ICurrentUser CurrentUser
+@inject ITagService _tagService
+@inject IBlogService _blogService
+@inject IAnthologyService _anthologyService;
+@{
+
+    List<TagAllDto> tags = await _tagService.GetAll();
+    List<BlogClientDto> hotPosts = await _blogService.GetRandomBlogsClient(9);
+    var hostAnthologys = await _anthologyService.GetHotAnthologyClient(3);
+    ViewBag.title = "标签";
+}
+@section header{
+<style>
+    .tag-cloud-tags {
+        margin: 10px 0;
+        padding-top: 2em;
+    }
+
+        .tag-cloud-tags a {
+            position: relative;
+            display: inline-block;
+            margin: 5px 10px;
+            word-wrap: break-word;
+            transition-timing-function: ease-out;
+            transition-duration: 0.3s;
+            transition-property: transform;
+            color: #161209;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+        }
+
+            .tag-cloud-tags a .small {
+                font-size: 80%;
+                margin: 0 0.3em;
+                color: #a9a9b3;
+            }
+</style>
+}
+<div class="container">
+    <div class="row mt-2 mb-2">
+        <div class="col-12 col-sm-12 col-md-8 col-lg-8 col-xl-9">
+            <div class="tag-cloud-tags">
+                @foreach (var tag in tags.OrderByDescending(n=>n.Count))
+                {
+                    <a title="@tag.Name">@tag.Name<small>(@tag.Count)</small></a>
+                }
+            </div>
+        </div>
+        <div class="col-12 col-sm-12 col-md- col-lg-4 col-xl-3">
+            <aside class="right-aside sticky-top" style="top:68px">
+                <div class="isgood_news panel-item ">
+                    <h2 class="h_title">热榜文集</h2>
+                    <ul>
+                        @{
+                            int k = 0;
+                            foreach (var article in hostAnthologys)
+                            {
+                                k++;
+                                <li>
+                                    <a href="/news/@article.Id" title="@article.Title" target="_self">
+                                        @{
+                                            string txt = article.Id.ToString();
+                                            string thumb = string.IsNullOrWhiteSpace(article.Thumb) ? $"/images/thumb-{txt.Substring(txt.Length - 1)}.jpg" : article.Thumb;
+                                        }
+                                        <i><img src="@thumb" alt="@article.Title"></i><em>@k</em>
+                                        <p>@article.Title</p>
+                                        <span class="star@(6-k>2?6-k:"2")"></span>
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+                @if (hotPosts != null)
+                {
+                    <div class="isgood_news panel-item mt-2">
+                        <h2 class="h_title">推荐阅读</h2>
+                        <div class="guess-like-box">
+                            @foreach (var item in hotPosts)
+                            {
+                                <article class="display-flex mb-10" itemscope itemtype="http://schema.org/Article" lang="zh-CN">
+                                    <link itemprop="mainEntityOfPage" href="//www.aimzhi.cn/news/@item.Id">
+                                    <div class="flex1">
+                                        <div itemprop="name headline" class="news-title es line-2">
+                                            <a href="/news/@item.Id" itemprop="url">@item.Title</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    </div>
+                }
+            </aside>
+        </div>
+    </div>
+</div>
+

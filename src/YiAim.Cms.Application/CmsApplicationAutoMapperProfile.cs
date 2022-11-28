@@ -28,5 +28,9 @@ public class CmsApplicationAutoMapperProfile : Profile
         CreateMap<Anthology, PageAnthologyDto>();
         CreateMap<Anthology, AnthologyDto>();
         CreateMap<Anthology, PageAnthologyClientDto>();
+
+        CreateMap<TagBaseDto, Tag>().ReverseMap();
+        CreateMap<Tag, TagDto>();
+        CreateMap<Tag, TagAllDto>();
     }
 }

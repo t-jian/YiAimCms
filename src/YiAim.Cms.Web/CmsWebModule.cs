@@ -114,11 +114,7 @@ public class CmsWebModule : AbpModule
         // 设置雪花Id的workerId，确保每个实例workerId都应不同
         YitIdHelper.SetIdGenerator(new IdGeneratorOptions {  WorkerId = 1}) ;
         //Razor视图运行时刷新实时编译 安装
-        context.Services.AddRazorPages(options => {
-            
-          
-        })
-            .AddRazorRuntimeCompilation();
+        context.Services.AddRazorPages().AddRazorRuntimeCompilation();
         //中文不转码
         context.Services.AddSingleton(HtmlEncoder.Create(UnicodeRanges.All));
     }
@@ -169,6 +165,7 @@ public class CmsWebModule : AbpModule
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();
+       
     }
 
 

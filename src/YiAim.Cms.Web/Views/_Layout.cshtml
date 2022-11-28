@@ -17,6 +17,7 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <link href="/css/m.css" rel="stylesheet">
+    <script src="/js/jquery-3.6.0.min.js"></script>
     @await RenderSectionAsync("header",false)
 
 </head>
@@ -28,7 +29,7 @@
                 <ul class="display-flex">
                     <li><a href="https://github.com/t-jian" target="_blank" rel="noopener">Github</a></li>
                     <li><a href="https://blog.csdn.net/qq_35260798" target="_blank" rel="noopener">CSDN</a></li>
-                    <li><a href="/">本站历程</a></li>
+                    <li><a href="/version">本站历程</a></li>
                 </ul>
             </div>
         </div>
@@ -39,8 +40,7 @@
                 <img src="https://src-cdn.ztan.net/ztan/site_logo.png" alt="logo">
                 <hr class="d-md-none text-white-50">
                 <div>
-                    <h1 class="name">生活日记</h1>
-                    <h2 class="desc">目之所及，皆为回忆</h2>
+                    <h1 class="name">目之瞬间</h1>
                 </div>
                 <hr class="d-md-none text-white-50">
             </a>
@@ -176,7 +176,7 @@
             </div>
         </div>
     </footer>
-    <script src="/js/jquery-3.6.0.min.js"></script>
+ 
     <script src="/js/bootstrap.min.js"></script>
     @await RenderSectionAsync("footer",false)
     <script>
